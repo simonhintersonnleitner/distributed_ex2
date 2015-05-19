@@ -68,8 +68,8 @@ io.on('connection', function(socket){
       io.emit('login_result', 0);
   });
   //List Articles
-  socket.on('list_article', function(){
-    io.emit('list_article_result', articleList);
+  socket.on('list_articles', function(){
+    io.emit('list_articles_result', articleList);
   });
 });
 
