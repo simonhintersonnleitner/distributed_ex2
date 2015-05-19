@@ -24,7 +24,6 @@ UserModel.prototype = {
 
 a = new UserModel("Fabi", "abc")
 b = new UserModel("Simon", "abc")
-// findUser("Fabi")
 
 function findUser(user) {
   return _.find(userlist, function(u){return u._userName === user});
@@ -32,28 +31,22 @@ function findUser(user) {
 
 function authenticate(username, pw) {
   var user = findUser(username);
-  console.log(username);
-  console.log(user);
   if (user === undefined || user.getPwd() !== pw)
     return false;
   return true;
-
 }
 
 
 io.on('connection', function(socket){
   socket.on('register', function(user,pw){
-    // console.log(user,pw);
-    io.emit('register_result',1);
+    io.emit('register_result', 1);
     var user = new UserModel(user, pw);
     socket.username = user._userName;
-    // console.log(userlist)
   });
 
   socket.on('login', function(user,pw){
-    console.log(user,pw);
-    authenticate(user, pw);
-  	if(user == "test" && pw == "password")
+
+  	if(authenticate(user, pw))
       io.emit('login_result',1);
     else
       io.emit('login_result',0);
