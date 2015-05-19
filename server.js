@@ -8,12 +8,13 @@ app.use(express.static(__dirname + '/public'));
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/client.html');
 });
-var userlist = [];
+var userList = [];
+var articleList = [];
 
 var UserModel = function(user, pw) {
   this._userName = user;
   this._pwd = pw;
-  userlist.push(this);
+  userList.push(this);
 }
 
 UserModel.prototype = {
@@ -22,11 +23,25 @@ UserModel.prototype = {
   }
 }
 
-a = new UserModel("Fabi", "abc")
-b = new UserModel("Simon", "abc")
+var ArticleModel = function(name, description, price) {
+  // this._id = _.max(articleList, function(article){ return article.id; }) + 1;
+  this._id = articleList.length //Gefährlich!!!!!
+  this._name = name;
+  this._description = description;
+  this._regularPrice = price;
+  this._imageUrl = "";
+  articleList.push(this);
+}
+
+u1 = new UserModel("Fabi", "abc")
+u2 = new UserModel("Simon", "abc")
+a1 = new ArticleModel("Teller", "Schöner Teller", 5)
+a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
+
+console.log(articleList)
 
 function findUser(user) {
-  return _.find(userlist, function(u){return u._userName === user});
+  return _.find(userList, function(u){return u._userName === user});
 }
 
 function authenticate(username, pw) {
@@ -38,18 +53,23 @@ function authenticate(username, pw) {
 
 
 io.on('connection', function(socket){
+  //Register
   socket.on('register', function(user,pw){
     io.emit('register_result', 1);
     var user = new UserModel(user, pw);
     socket.username = user._userName;
+    console.log(socket.username)
   });
-
+  //Login
   socket.on('login', function(user,pw){
-
   	if(authenticate(user, pw))
-      io.emit('login_result',1);
+      io.emit('login_result', 1);
     else
-      io.emit('login_result',0);
+      io.emit('login_result', 0);
+  });
+  //List Articles
+  socket.on('list_article', function(){
+    io.emit('list_article_result', articleList);
   });
 });
 
