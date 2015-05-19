@@ -1,0 +1,10 @@
+{
+  "name": "distributed_ex01",
+  "version": "0.0.1",
+  "main": "server.js",
+  "description": "First Implemenation",
+  "dependencies": {
+    "express": "4.10.2",
+    "socket.io": "1.2.0"
+  }
+}
