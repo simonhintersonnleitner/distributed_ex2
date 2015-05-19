@@ -1,4 +1,9 @@
+
+
+//var socket = io.connect('http://localhost', { resource: 'public/socket.io' });
 var socket = io.connect('http://localhost', {path: "/public/socket.io"});
+//var socket = io();
+
 
 $(document).ready(function (){
 	$('#login').click(function(){
