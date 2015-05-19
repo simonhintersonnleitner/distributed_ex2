@@ -10,6 +10,7 @@ app.get('/', function(req, res){
 });
 var userList = [];
 var articleList = [];
+var auctionList = [];
 
 var UserModel = function(user, pw) {
   this._userName = user;
@@ -25,20 +26,47 @@ UserModel.prototype = {
 
 var ArticleModel = function(name, description, price) {
   // this._id = _.max(articleList, function(article){ return article.id; }) + 1;
-  this._id = articleList.length //Gefährlich!!!!!
+  this._id = articleList.length; //Gefährlich!!!!!
   this._name = name;
   this._description = description;
   this._regularPrice = price;
   this._imageUrl = "";
   articleList.push(this);
 }
+ArticleModel.prototype = {
+  getArticleById: function(id) {
+    return _.findWhere(articleList, {_id: id});
+  }
+}
+
+var AuctionModel = function(articleId, beganAt, endsAt) {
+  // this._id = _.max(articleList, function(article){ return article.id; }) + 1;
+  this._id = auctionList.length; //Gefährlich!!!!!
+  this._article = ArticleModel.prototype.getArticleById(articleId);
+  this._beganAt = beganAt;
+  this._endsAt = endsAt;
+  this._bids = [];
+  this._ended = false;
+  auctionList.push(this);
+}
+AuctionModel.prototype = {
+  getLiveAuctions: function() {
+    return _.filter(auctionList, function(auc){ return auc._endsAt > Date.now(); });
+  }
+}
 
 u1 = new UserModel("Fabi", "abc")
 u2 = new UserModel("Simon", "abc")
 a1 = new ArticleModel("Teller", "Schöner Teller", 5)
 a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
+a2 = new ArticleModel("Bier", "hmm", 15)
+au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 60 * 5)
+au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 60 * 5)
+au2 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 5)
 
-console.log(articleList)
+// console.log(articleList)
+// console.log(auctionList)
+// console.log(AuctionModel.prototype.getLiveAuctions());
 
 function findUser(user) {
   return _.find(userList, function(u){return u._userName === user});
@@ -68,8 +96,8 @@ io.on('connection', function(socket){
       io.emit('login_result', 0);
   });
   //List Articles
-  socket.on('list_article', function(){
-    io.emit('list_article_result', articleList);
+  socket.on('list_articles', function(){
+    io.emit('list_articles_result', AuctionModel.prototype.getLiveAuctions());
   });
 });
 
