@@ -2,7 +2,7 @@ var app = require('express')();
 var express = require('express');
 var http = require('http').Server(app);
 var io = require('socket.io')(http, {path: '/public/socket.io'})
-
+var _ = require('underscore');
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){
@@ -16,18 +16,43 @@ var UserModel = function(user, pw) {
   userlist.push(this);
 }
 
+UserModel.prototype = {
+  getPwd: function() {
+    return this._pwd;
+  }
+}
+
+a = new UserModel("Fabi", "abc")
+b = new UserModel("Simon", "abc")
+// findUser("Fabi")
+
+function findUser(user) {
+  return _.find(userlist, function(u){return u._userName === user});
+}
+
+function authenticate(username, pw) {
+  var user = findUser(username);
+  console.log(username);
+  console.log(user);
+  if (user === undefined || user.getPwd() !== pw)
+    return false;
+  return true;
+
+}
+
 
 io.on('connection', function(socket){
   socket.on('register', function(user,pw){
-    console.log(user,pw);
+    // console.log(user,pw);
     io.emit('register_result',1);
     var user = new UserModel(user, pw);
     socket.username = user._userName;
-    console.log(userlist)
+    // console.log(userlist)
   });
 
   socket.on('login', function(user,pw){
     console.log(user,pw);
+    authenticate(user, pw);
   	if(user == "test" && pw == "password")
       io.emit('login_result',1);
     else
@@ -35,7 +60,6 @@ io.on('connection', function(socket){
   });
 });
 
-console.log(io);
 
 http.listen(3000, function(){
   console.log('listening on *:3000');
