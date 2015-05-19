@@ -22,7 +22,10 @@ $(document).ready(function (){
         });
 
         $('.bid').click(function() {
-          console.log("New Bid: " + $(this).data('id') +" " + $('#value_' + $(this).data('id')).val());
+          var articleId = $(this).data('id');
+          var value = $('#value_'+articleId).val();
+          console.log("New Bid: " + articleId +" " + value);
+          socket.emit('new_bid', articleId, value);
         });
 
       });
