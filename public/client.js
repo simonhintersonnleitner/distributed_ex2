@@ -4,7 +4,7 @@ $(document).ready(function (){
   $('#login').click(function(){
   socket.emit('login', $('#user').val(),$('#pw').val());
   });
-  
+
   socket.on('login_result', function(res){
     console.log("login_result " + res);
     $('#output').empty();
@@ -37,4 +37,4 @@ $(document).ready(function (){
 });
 
 
-  
+
