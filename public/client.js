@@ -9,13 +9,31 @@ $(document).ready(function (){
     console.log("login_result " + res);
     $('#output').empty();
     if(res == 1)
-    	$('#output').append("Login erflogreich!");
+    {
+      $('#output').append("Login erflogreich!");
+      socket.emit('list_articles');
+      socket.on('list_articles_result', function(res){
+        console.log(res);
+        $('#articleList').empty();
+        res.forEach(function(article){
+          $('#articleList').append("<li>"+article._name+" | "+article._description+" | "+article._regularPrice+"€");
+          $('#articleList').append("<button class='bid' data-id="+article._id+">Bieten</button>");
+          $('#articleList').append("<input type='text' id='value_"+article._id+"'></li>");
+        });
+
+        $('.bid').click(function() {
+          console.log("New Bid: " + $(this).data('id') +" " + $('#value_' + $(this).data('id')).val());
+        });
+
+      });
+    }
    	else
    		$('#output').append("<p>Login nicht erflogreich!</p>");
   });
 
+
+
   $('#register').click(function(){
-  console.log("Register");
   socket.emit('register', $('#user').val(),$('#pw').val());
   });
 
