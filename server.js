@@ -96,8 +96,8 @@ io.on('connection', function(socket){
       io.emit('login_result', 0);
   });
   //List Articles
-  socket.on('list_articles', function(){
-    io.emit('list_articles_result', AuctionModel.prototype.getLiveAuctions());
+  socket.on('list_auctions', function(){
+    io.emit('list_auctions_result', AuctionModel.prototype.getLiveAuctions());
   });
 });
 

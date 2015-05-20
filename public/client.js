@@ -11,21 +11,21 @@ $(document).ready(function (){
     if(res == 1)
     {
       $('#output').append("Login erflogreich!");
-      socket.emit('list_articles');
-      socket.on('list_articles_result', function(res){
+      socket.emit('list_auctions');
+      socket.on('list_auctions_result', function(res){
         console.log(res);
         $('#articleList').empty();
-        res.forEach(function(article){
-          $('#articleList').append("<li>"+article._name+" | "+article._description+" | "+article._regularPrice+"€");
-          $('#articleList').append("<button class='bid' data-id="+article._id+">Bieten</button>");
-          $('#articleList').append("<input type='text' id='value_"+article._id+"'></li>");
+        res.forEach(function(auction){
+          $('#articleList').append("<li>"+auction._article._name+" | "+auction._article._description+" | "+auction._article._regularPrice+"€");
+          $('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
+          $('#articleList').append("<input type='text' id='value_"+auction._id+"'></li>");
         });
 
         $('.bid').click(function() {
-          var articleId = $(this).data('id');
-          var value = $('#value_'+articleId).val();
-          console.log("New Bid: " + articleId +" " + value);
-          socket.emit('new_bid', articleId, value);
+          var auctionId = $(this).data('id');
+          var value = $('#value_'+auctionId).val();
+          console.log("New Bid: " + auctionId +" " + value);
+          socket.emit('new_bid', auctionId, value);
         });
 
       });
