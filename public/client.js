@@ -18,12 +18,15 @@ $(document).ready(function (){
         res.forEach(function(auction){
           $('#articleList').append("<li>"+auction._article._name+" | "+auction._article._description+" | "+auction._article._regularPrice+"€");
           $('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
-          $('#articleList').append("<input type='text' id='value_"+auction._id+"'></li>");
+          $('#articleList').append("<input type='text' id='value_"+auction._id+"'>");
+          $('#articleList').append("<div class='time' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></li>");
+          setInterval(function() {updateTime();}, 1000);
         });
 
         $('.bid').click(function() {
           var auctionId = $(this).data('id');
           var value = $('#value_'+auctionId).val();
+          console.log(value);
           console.log("New Bid: " + auctionId +" " + value);
           socket.emit('new_bid', auctionId, value);
         });
@@ -34,7 +37,9 @@ $(document).ready(function (){
    		$('#output').append("<p>Login nicht erflogreich!</p>");
   });
 
-
+  socket.on('new_bid_result', function(res){
+    console.log(res);
+  });
 
   $('#register').click(function(){
   socket.emit('register', $('#user').val(),$('#pw').val());
@@ -50,5 +55,21 @@ $(document).ready(function (){
   });
 });
 
+function getRemaing(dateString){
+  var date1 = new Date();
+  var date2 = new Date(dateString);
+  var diff = new Date(date2.getTime() - date1.getTime());
 
+  var days = diff.getUTCDate()-1; // Gives day count of difference
+  var seconds = diff.getUTCSeconds();
+  var houres = diff.getUTCHours();
+  var minutes = diff.getUTCMinutes()
+  return("Zeit verbleibend: Tage: "+  days  +" Stunden: "+ houres + " Minuten: "+ minutes + " Sekunden: " + seconds );
+}
+
+
+function updateTime(){
+  $('.time').empty();
+  $('.time').append(getRemaing($('.time').data('end')));
+}
 
