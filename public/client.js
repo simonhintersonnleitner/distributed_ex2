@@ -85,6 +85,6 @@ function updateTime(){
   var remainingTime = getRemaing($('.time').data('end'));
   $('.time').empty();
   $('.time').append(remainingTime);
-  
+
 }
 
