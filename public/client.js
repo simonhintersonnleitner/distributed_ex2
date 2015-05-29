@@ -25,8 +25,9 @@ $(document).ready(function (){
         $('#articleList').empty();
         res.forEach(function(auction){
           $('#articleList').append("<li>"+auction._article._name+" | "+auction._article._description+" | "+auction._article._regularPrice+"€");
-          $('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
           $('#articleList').append("<input type='text' id='value_"+auction._id+"'>");
+          $('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
+          $('#articleList').append("<button class='check' data-id="+auction._id+">CheckBid</button>");
           $('#articleList').append("<div class='time' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></li>");
           setInterval(function() {updateTime();}, 1000);
         });
@@ -46,7 +47,7 @@ $(document).ready(function (){
   });
 
   socket.on('new_bid_result', function(res){
-    console.log(res);
+    //console.log(res);
     if(res == -1)
       console.log("Glückwunsch sie haben das niedrigste Einzelgebot!");
     else if(res == 1)
