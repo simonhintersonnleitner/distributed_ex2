@@ -50,32 +50,21 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
   this._endsAt = endsAt;
   this._bids = [];
   this._ended = false;
+
   this.checkBid = function(bid){
+    console.log("newBid")
     var count = _.filter(this._bids, function(b) {
       return b._value === bid._value;
     }).length;
+
     if (count === 1) {
-      var groupedBids = _.groupBy(this._bids, function(b) {
-        return b._value;
-      });
-      console.log(groupedBids)
-
-      var firstSingle = _.find(groupedBids, function(b){
-        return b.length === 1;
-      });
-
-      if (firstSingle === bid) {
+      var winningBid = AuctionModel.prototype.getWinningBid(this);
+      if(winningBid._value === bid._value){
         return -1;
       }
-      else {
-        return 1;
-      }
+    }
 
-    }
-    else
-    {
-      return count;
-    }
+    return count;
   };
   auctionList.push(this);
 }
@@ -91,12 +80,32 @@ AuctionModel.prototype = {
     var auction = AuctionModel.prototype.getAuction(auctionId);
     auction._bids.push(bid);
     return auction.checkBid(bid);
+  },
+  getWinningBid: function(auction) {
+    var sortedBids = _.sortBy(auction._bids, function(b){
+        return b._value;
+      });
+
+    var winningBid = 'no single bid';
+
+    for (var i = 0; i < sortedBids.length; i++) {
+
+      var amount = _.filter(sortedBids, function(b){
+        return b._value === sortedBids[i]._value;
+      }).length;
+
+      if ( amount === 1 ) {
+        winningBid = sortedBids[i];
+        break;
+      }
+    }
+    return winningBid;
   }
 }
 
 var BidModel = function(value, username) {
   this._user = UserModel.prototype.findUser(username);
-  this._value = value;
+  this._value = value * 1;
 }
 
 u1 = new UserModel("Fabi", "abc")
