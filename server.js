@@ -51,7 +51,31 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
   this._bids = [];
   this._ended = false;
   this.checkBid = function(bid){
-    
+    var count = _.filter(this._bids, function(b) {
+      return b._value === bid._value;
+    }).length;
+    if (count === 1) {
+      var groupedBids = _.groupBy(this._bids, function(b) {
+        return b._value;
+      });
+      console.log(groupedBids)
+
+      var firstSingle = _.find(groupedBids, function(b){
+        return b.length === 1;
+      });
+
+      if (firstSingle === bid) {
+        return -1;
+      }
+      else {
+        return 1;
+      }
+
+    }
+    else
+    {
+      return count;
+    }
   };
   auctionList.push(this);
 }
@@ -66,7 +90,7 @@ AuctionModel.prototype = {
     var bid = new BidModel(value, username);
     var auction = AuctionModel.prototype.getAuction(auctionId);
     auction._bids.push(bid);
-    console.log(auction.checkBid(bid));
+    return auction.checkBid(bid);
   }
 }
 
