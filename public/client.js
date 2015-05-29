@@ -59,17 +59,29 @@ function getRemaing(dateString){
   var date1 = new Date();
   var date2 = new Date(dateString);
   var diff = new Date(date2.getTime() - date1.getTime());
-
-  var days = diff.getUTCDate()-1; // Gives day count of difference
+  var days = diff.getUTCDate()-1;
   var seconds = diff.getUTCSeconds();
   var houres = diff.getUTCHours();
   var minutes = diff.getUTCMinutes()
+  if(days == 0 && seconds == 0 && houres == 0 && minutes == 0)
+  {
+    return false;
+  }
   return("Zeit verbleibend: Tage: "+  days  +" Stunden: "+ houres + " Minuten: "+ minutes + " Sekunden: " + seconds );
 }
 
 
 function updateTime(){
-  $('.time').empty();
-  $('.time').append(getRemaing($('.time').data('end')));
+  var remainingTime = getRemaing($('.time').data('end'));
+  if(!remainingTime){
+    console.log("Timeout!");
+    $('#articleList').empty();
+     $('#articleList').append("Aktuell gibt es keine aktuellen Artikel!")
+  }else
+  {
+    $('.time').empty();
+    $('.time').append(remainingTime);
+  }
+  
 }
 
