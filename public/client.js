@@ -24,21 +24,31 @@ $(document).ready(function (){
         console.log(res);
         $('#articleList').empty();
         res.forEach(function(auction){
-          $('#articleList').append("<li>"+auction._article._name+" | "+auction._article._description+" | "+auction._article._regularPrice+"€");
-          $('#articleList').append("<input type='text' id='value_"+auction._id+"'>");
-          $('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
-          $('#articleList').append("<button class='check' data-id="+auction._id+">CheckBid</button>");
-          $('#articleList').append("<div class='time' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></li>");
+
+          $('#articleList').append("<tr id='row_"+auction._id+"''>");
+          $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._name+"</td>");
+          $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._description+"</td>");
+          $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._regularPrice+" €</td>");
+          $('#articleList').find("#row_"+auction._id).append("<td><div class='time' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></td>");
+          $('#articleList').find("#row_"+auction._id).append("<td><div class='form-inline'><input type='text'  id='value_"+auction._id+"' class='form-control'><button class='btn btn-default' id='bid' data-id="+auction._id+">Bid</button></div></td>");
+          $('#articleList').find("#row_"+auction._id).append("<td><button class='btn btn-default' id='check' data-id="+auction._id+">Check</button></td>");
+          $('#articleList').append("</tr>");
+
+          //$('#articleList').append("<input type='text' id='value_"+auction._id+"'>");
+          //$('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
+          //$('#articleList').append("<button class='check' data-id="+auction._id+">CheckBid</button>");
+
           setInterval(function() {updateTime();}, 1000);
         });
 
-        $('.bid').click(function() {
+        $('#bid').click(function() {
           var auctionId = $(this).data('id');
           var value = $('#value_' + auctionId).val();
           socket.emit('new_bid', auctionId, value);
+          console.log("bid:" + auctionId + " " + value);
         });
 
-        $('.check').click(function() {
+        $('#check').click(function() {
           var auctionId = $(this).data('id');
           socket.emit('check_bid', auctionId);
         });
@@ -89,7 +99,7 @@ function getRemaing(dateString){
   var seconds = diff.getUTCSeconds();
   var houres = diff.getUTCHours();
   var minutes = diff.getUTCMinutes()
-  return("Zeit verbleibend: Tage: "+  days  +" Stunden: "+ houres + " Minuten: "+ minutes + " Sekunden: " + seconds );
+  return(days  +"d - "+ houres + ":"+ minutes + ":" + seconds );
 }
 
 function updateTime(){
