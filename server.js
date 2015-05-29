@@ -19,6 +19,9 @@ var UserModel = function(user, pw) {
 }
 
 UserModel.prototype = {
+  findUser: function(user) {
+    return _.find(userList, function(u){return u._userName === user});
+  },
   getPwd: function() {
     return this._pwd;
   }
@@ -52,7 +55,21 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
 AuctionModel.prototype = {
   getLiveAuctions: function() {
     return _.filter(auctionList, function(auc){ return auc._endsAt > Date.now(); });
+  },
+  getAuction: function(auctionId) {
+    return _.find(auctionList, function(a){return a._id === auctionId});
+  },
+  newBid: function(auctionId, value, username) {
+    var bid = new BidModel(value, username);
+    var auction = AuctionModel.prototype.getAuction(auctionId);
+    auction._bids.push(bid);
+    console.log(auction._bids);
   }
+}
+
+var BidModel = function(value, username) {
+  this._user = UserModel.prototype.findUser(username);
+  this._value = value;
 }
 
 u1 = new UserModel("Fabi", "abc")
@@ -68,12 +85,8 @@ au2 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 
 // console.log(auctionList)
 // console.log(AuctionModel.prototype.getLiveAuctions());
 
-function findUser(user) {
-  return _.find(userList, function(u){return u._userName === user});
-}
-
 function authenticate(username, pw) {
-  var user = findUser(username);
+  var user = UserModel.prototype.findUser(username);
   if (user === undefined || user.getPwd() !== pw)
     return false;
   return true;
@@ -86,18 +99,27 @@ io.on('connection', function(socket){
     io.emit('register_result', 1);
     var user = new UserModel(user, pw);
     socket.username = user._userName;
-    console.log(socket.username)
+
   });
+
   //Login
   socket.on('login', function(user,pw){
-  	if(authenticate(user, pw))
+  	if(authenticate(user, pw)) {
+      socket.username = user;
       io.emit('login_result', 1);
+    }
     else
       io.emit('login_result', 0);
   });
+
   //List Articles
   socket.on('list_auctions', function(){
     io.emit('list_auctions_result', AuctionModel.prototype.getLiveAuctions());
+  });
+
+  //New bid
+  socket.on('new_bid', function(auctionId, value) {
+    io.emit('new_bid_result', AuctionModel.prototype.newBid(auctionId, value, socket.username));
   });
 });
 
