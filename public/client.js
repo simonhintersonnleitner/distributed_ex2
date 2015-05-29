@@ -37,16 +37,6 @@ $(document).ready(function (){
           console.log(value);
           console.log("New Bid: " + auctionId +" " + value);
           socket.emit('new_bid', auctionId, value);
-          socket.emit('new_bid_result',function(res){
-              console.log(res);
-              if(res == -1)
-                console.log("Glückwunsch sie haben das nidrigste Einzelgebot!");
-              else if(res == 0)
-                console.log("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
-              else
-                console.log("Es haben " + res + " Personen das gleiche Gebot wie sie!")
-          });
-
         });
 
       });
@@ -57,6 +47,12 @@ $(document).ready(function (){
 
   socket.on('new_bid_result', function(res){
     console.log(res);
+    if(res == -1)
+      console.log("Glückwunsch sie haben das niedrigste Einzelgebot!");
+    else if(res == 1)
+      console.log("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
+    else
+      console.log("Es haben " + res + " Personen das gleiche Gebot wie sie!");
   });
 
   $('#register').click(function(){
