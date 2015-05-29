@@ -5,12 +5,20 @@ $(document).ready(function (){
   socket.emit('login', $('#user').val(),$('#pw').val());
   });
 
+  $('#login').click(function(){
+  socket.emit('login', $('#user').val(),$('#pw').val());
+  });
+
   socket.on('login_result', function(res){
     console.log("login_result " + res);
     $('#output').empty();
     if(res == 1)
     {
+      $('#login').prop( "disabled", true );
+      $('#register').prop( "disabled", true );
+
       $('#output').append("Login erflogreich!");
+
       socket.emit('list_auctions');
       socket.on('list_auctions_result', function(res){
         console.log(res);
@@ -29,6 +37,16 @@ $(document).ready(function (){
           console.log(value);
           console.log("New Bid: " + auctionId +" " + value);
           socket.emit('new_bid', auctionId, value);
+          socket.emit('new_bid_result',function(res){
+              console.log(res);
+              if(res == -1)
+                console.log("Glückwunsch sie haben das nidrigste Einzelgebot!");
+              else if(res == 0)
+                console.log("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
+              else
+                console.log("Es haben " + res + " Personen das gleiche Gebot wie sie!")
+          });
+
         });
 
       });
@@ -51,7 +69,7 @@ $(document).ready(function (){
     if(res == 1)
       $('#output').append("Registierung erflogreich!");
     else
-      $('#output').append("<p>Registierung nicht erflogreich!</p>");
+      $('#output').append("Registierung nicht erflogreich!");
   });
 });
 
@@ -63,25 +81,13 @@ function getRemaing(dateString){
   var seconds = diff.getUTCSeconds();
   var houres = diff.getUTCHours();
   var minutes = diff.getUTCMinutes()
-  if(days == 0 && seconds == 0 && houres == 0 && minutes == 0)
-  {
-    return false;
-  }
   return("Zeit verbleibend: Tage: "+  days  +" Stunden: "+ houres + " Minuten: "+ minutes + " Sekunden: " + seconds );
 }
 
-
 function updateTime(){
   var remainingTime = getRemaing($('.time').data('end'));
-  if(!remainingTime){
-    console.log("Timeout!");
-    $('#articleList').empty();
-     $('#articleList').append("Aktuell gibt es keine aktuellen Artikel!")
-  }else
-  {
-    $('.time').empty();
-    $('.time').append(remainingTime);
-  }
+  $('.time').empty();
+  $('.time').append(remainingTime);
   
 }
 
