@@ -25,18 +25,22 @@ $(document).ready(function (){
         $('#articleList').empty();
         res.forEach(function(auction){
           $('#articleList').append("<li>"+auction._article._name+" | "+auction._article._description+" | "+auction._article._regularPrice+"€");
-          $('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
           $('#articleList').append("<input type='text' id='value_"+auction._id+"'>");
+          $('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
+          $('#articleList').append("<button class='check' data-id="+auction._id+">CheckBid</button>");
           $('#articleList').append("<div class='time' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></li>");
           setInterval(function() {updateTime();}, 1000);
         });
 
         $('.bid').click(function() {
           var auctionId = $(this).data('id');
-          var value = $('#value_'+auctionId).val();
-          console.log(value);
-          console.log("New Bid: " + auctionId +" " + value);
+          var value = $('#value_' + auctionId).val();
           socket.emit('new_bid', auctionId, value);
+        });
+
+        $('.check').click(function() {
+          var auctionId = $(this).data('id');
+          socket.emit('check_bid', auctionId);
         });
 
       });
@@ -46,13 +50,21 @@ $(document).ready(function (){
   });
 
   socket.on('new_bid_result', function(res){
-    console.log(res);
     if(res == -1)
       console.log("Glückwunsch sie haben das niedrigste Einzelgebot!");
     else if(res == 1)
       console.log("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
     else
       console.log("Es haben " + res + " Personen das gleiche Gebot wie sie!");
+  });
+
+   socket.on('check_bid_result', function(res){
+    if(res == -1)
+      console.log("Fehler es wurde keine Gebot abgegeben!");
+    else if(res == 1)
+      console.log("Glückwunsch sie haben aktuell das niedrigste Einzelgebot!");
+    else
+      console.log("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
   });
 
   $('#register').click(function(){
