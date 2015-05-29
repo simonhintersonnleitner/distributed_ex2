@@ -50,6 +50,9 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
   this._endsAt = endsAt;
   this._bids = [];
   this._ended = false;
+  this.checkBid = function(bid){
+    
+  };
   auctionList.push(this);
 }
 AuctionModel.prototype = {
@@ -63,7 +66,7 @@ AuctionModel.prototype = {
     var bid = new BidModel(value, username);
     var auction = AuctionModel.prototype.getAuction(auctionId);
     auction._bids.push(bid);
-    console.log(auction._bids);
+    console.log(auction.checkBid(bid));
   }
 }
 
@@ -76,10 +79,10 @@ u1 = new UserModel("Fabi", "abc")
 u2 = new UserModel("Simon", "abc")
 a1 = new ArticleModel("Teller", "Schöner Teller", 5)
 a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
-a2 = new ArticleModel("Bier", "hmm", 15)
+a3 = new ArticleModel("Bier", "hmm", 15)
 au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 60 * 5)
 au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 60 * 5)
-au2 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 5)
+au3 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 5)
 
 // console.log(articleList)
 // console.log(auctionList)
