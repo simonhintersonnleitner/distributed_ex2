@@ -100,6 +100,14 @@ AuctionModel.prototype = {
       }
     }
     return winningBid;
+  },
+  checkBid: function(username, auctionId) {
+    var user = UserModel.prototype.findUser(username);
+    var winningBid = AuctionModel.prototype.getWinningBid(auctionId);
+    console.log("winningBid")
+    console.log(winningBid)
+    if(winningBid._user === user)
+      console.log('you win')
   }
 }
 
@@ -155,7 +163,13 @@ io.on('connection', function(socket){
 
   //New bid
   socket.on('new_bid', function(auctionId, value) {
+    AuctionModel.prototype.checkBid(socket.username, auctionId)
     io.emit('new_bid_result', AuctionModel.prototype.newBid(auctionId, value, socket.username));
+  });
+
+  //check bid
+  socket.on('check_bid', function(auctionId) {
+    io.emit('check_bid_result', AuctionModel.prototype.checkBid(socket.username, auctionId));
   });
 });
 
