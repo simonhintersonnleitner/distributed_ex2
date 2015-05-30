@@ -22,9 +22,9 @@ $(document).ready(function (){
       socket.emit('list_auctions');
       socket.on('list_auctions_result', function(res){
         console.log(res);
-        $('#articleList').empty();
+       
         res.forEach(function(auction){
-
+          $('#articleList').find("#row_"+auction._id).remove();
           $('#articleList').append("<tr id='row_"+auction._id+"''>");
           $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._name+"</td>");
           $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._description+"</td>");
@@ -60,21 +60,35 @@ $(document).ready(function (){
   });
 
   socket.on('new_bid_result', function(res){
-    if(res == -1)
+    $('#output').empty();
+    if(res == -1) {
+      $('#output').append("Glückwunsch sie haben das niedrigste Einzelgebot!");
       console.log("Glückwunsch sie haben das niedrigste Einzelgebot!");
-    else if(res == 1)
+    }
+    else if(res == 1) {
+      $('#output').append("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
       console.log("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
-    else
+    }
+    else {
+      $('#output').append("Es haben " + res + " Personen das gleiche Gebot wie sie!");
       console.log("Es haben " + res + " Personen das gleiche Gebot wie sie!");
+    }
   });
 
    socket.on('check_bid_result', function(res){
-    if(res == -1)
+    $('#output').empty();
+    if(res == -1) {
+      $('#output').append("Fehler es wurde keine Gebot abgegeben!");
       console.log("Fehler es wurde keine Gebot abgegeben!");
-    else if(res == 1)
-      console.log("Glückwunsch sie haben aktuell das niedrigste Einzelgebot!");
-    else
+    }
+    else if(res == 1) {
+      $('#output').append("Glückwunsch sie haben aktuell das niedrigste Einzelgebot!");
+      console.log("Glückwunsch sie haben aktuell das niedrigste Einzelgebot!"); 
+    }
+    else {
+      $('#output').append("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
       console.log("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
+    }
   });
 
   $('#register').click(function(){
