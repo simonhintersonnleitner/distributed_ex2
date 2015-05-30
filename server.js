@@ -52,19 +52,7 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
   this._ended = false;
 
   this.checkBid = function(bid){
-    console.log("newBid")
-    var count = _.filter(this._bids, function(b) {
-      return b._value === bid._value;
-    }).length;
 
-    if (count === 1) {
-      var winningBid = AuctionModel.prototype.getWinningBid(this);
-      if(winningBid._value === bid._value){
-        return -1;
-      }
-    }
-
-    return count;
   };
   auctionList.push(this);
 }
@@ -79,13 +67,25 @@ AuctionModel.prototype = {
     var bid = new BidModel(value, username);
     var auction = AuctionModel.prototype.getAuction(auctionId);
     auction._bids.push(bid);
-    return auction.checkBid(bid);
+
+    //check bid
+    var count = _.filter(auction._bids, function(b) {
+      return b._value === bid._value;
+    }).length;
+
+    if (count === 1) {
+      var winningBid = AuctionModel.prototype.getWinningBid(auction);
+
+      if(winningBid._value === bid._value){
+        return -1;
+      }
+    }
+    return count;
   },
   getWinningBid: function(auction) {
     var sortedBids = _.sortBy(auction._bids, function(b){
         return b._value;
       });
-
     var winningBid = 'no single bid';
 
     for (var i = 0; i < sortedBids.length; i++) {
@@ -103,11 +103,16 @@ AuctionModel.prototype = {
   },
   checkBid: function(username, auctionId) {
     var user = UserModel.prototype.findUser(username);
-    var winningBid = AuctionModel.prototype.getWinningBid(auctionId);
-    console.log("winningBid")
-    console.log(winningBid)
+    var auction = AuctionModel.prototype.getAuction(auctionId);
+    var winningBid = AuctionModel.prototype.getWinningBid(auction);
+
+    if (!_.find(auction._bids, function(b){ return b._user === user}))
+      return -1;
+
     if(winningBid._user === user)
-      console.log('you win')
+      return 1;
+
+    return 0;
   }
 }
 
@@ -116,18 +121,7 @@ var BidModel = function(value, username) {
   this._value = value * 1;
 }
 
-u1 = new UserModel("Fabi", "abc")
-u2 = new UserModel("Simon", "abc")
-a1 = new ArticleModel("Teller", "Schöner Teller", 5)
-a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
-a3 = new ArticleModel("Bier", "hmm", 15)
-au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 60 * 5)
-au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 60 * 5)
-au3 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 5)
 
-// console.log(articleList)
-// console.log(auctionList)
-// console.log(AuctionModel.prototype.getLiveAuctions());
 
 function authenticate(username, pw) {
   var user = UserModel.prototype.findUser(username);
@@ -163,7 +157,6 @@ io.on('connection', function(socket){
 
   //New bid
   socket.on('new_bid', function(auctionId, value) {
-    AuctionModel.prototype.checkBid(socket.username, auctionId)
     io.emit('new_bid_result', AuctionModel.prototype.newBid(auctionId, value, socket.username));
   });
 
@@ -173,6 +166,17 @@ io.on('connection', function(socket){
   });
 });
 
+//seeds
+u1 = new UserModel("Fabi", "abc")
+u2 = new UserModel("Simon", "abc")
+a1 = new ArticleModel("Teller", "Schöner Teller", 5)
+a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
+a3 = new ArticleModel("Bier", "hmm", 15)
+au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 60 * 5)
+au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 60 * 5)
+au3 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 5)
+new AuctionModel.prototype.newBid(0, 5, "Fabi");
+new AuctionModel.prototype.newBid(0, 6, "Simon");
 
 http.listen(3000, function(){
   console.log('listening on *:3000');
