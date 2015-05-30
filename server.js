@@ -89,7 +89,6 @@ AuctionModel.prototype = {
     var winningBid = 'no single bid';
 
     for (var i = 0; i < sortedBids.length; i++) {
-
       var amount = _.filter(sortedBids, function(b){
         return b._value === sortedBids[i]._value;
       }).length;
@@ -120,8 +119,6 @@ var BidModel = function(value, username) {
   this._user = UserModel.prototype.findUser(username);
   this._value = value * 1;
 }
-
-
 
 function authenticate(username, pw) {
   var user = UserModel.prototype.findUser(username);
