@@ -22,23 +22,33 @@ $(document).ready(function (){
       socket.emit('list_auctions');
       socket.on('list_auctions_result', function(res){
         console.log(res);
-        $('#articleList').empty();
+       
         res.forEach(function(auction){
-          $('#articleList').append("<li>"+auction._article._name+" | "+auction._article._description+" | "+auction._article._regularPrice+"€");
-          $('#articleList').append("<input type='text' id='value_"+auction._id+"'>");
-          $('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
-          $('#articleList').append("<button class='check' data-id="+auction._id+">CheckBid</button>");
-          $('#articleList').append("<div class='time' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></li>");
+          $('#articleList').find("#row_"+auction._id).remove();
+          $('#articleList').append("<tr id='row_"+auction._id+"''>");
+          $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._name+"</td>");
+          $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._description+"</td>");
+          $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._regularPrice+" €</td>");
+          $('#articleList').find("#row_"+auction._id).append("<td><div class='time' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></td>");
+          $('#articleList').find("#row_"+auction._id).append("<td><div class='form-inline'><input type='text'  id='value_"+auction._id+"' class='form-control'><button class='btn btn-default' id='bid' data-id="+auction._id+">Bid</button></div></td>");
+          $('#articleList').find("#row_"+auction._id).append("<td><button class='btn btn-default' id='check' data-id="+auction._id+">Check</button></td>");
+          $('#articleList').append("</tr>");
+
+          //$('#articleList').append("<input type='text' id='value_"+auction._id+"'>");
+          //$('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
+          //$('#articleList').append("<button class='check' data-id="+auction._id+">CheckBid</button>");
+
           setInterval(function() {updateTime();}, 1000);
         });
 
-        $('.bid').click(function() {
+        $('#bid').click(function() {
           var auctionId = $(this).data('id');
           var value = $('#value_' + auctionId).val();
           socket.emit('new_bid', auctionId, value);
+          console.log("bid:" + auctionId + " " + value);
         });
 
-        $('.check').click(function() {
+        $('#check').click(function() {
           var auctionId = $(this).data('id');
           socket.emit('check_bid', auctionId);
         });
@@ -50,21 +60,35 @@ $(document).ready(function (){
   });
 
   socket.on('new_bid_result', function(res){
-    if(res == -1)
+    $('#output').empty();
+    if(res == -1) {
+      $('#output').append("Glückwunsch sie haben das niedrigste Einzelgebot!");
       console.log("Glückwunsch sie haben das niedrigste Einzelgebot!");
-    else if(res == 1)
+    }
+    else if(res == 1) {
+      $('#output').append("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
       console.log("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
-    else
+    }
+    else {
+      $('#output').append("Es haben " + res + " Personen das gleiche Gebot wie sie!");
       console.log("Es haben " + res + " Personen das gleiche Gebot wie sie!");
+    }
   });
 
    socket.on('check_bid_result', function(res){
-    if(res == -1)
+    $('#output').empty();
+    if(res == -1) {
+      $('#output').append("Fehler es wurde keine Gebot abgegeben!");
       console.log("Fehler es wurde keine Gebot abgegeben!");
-    else if(res == 1)
-      console.log("Glückwunsch sie haben aktuell das niedrigste Einzelgebot!");
-    else
+    }
+    else if(res == 1) {
+      $('#output').append("Glückwunsch sie haben aktuell das niedrigste Einzelgebot!");
+      console.log("Glückwunsch sie haben aktuell das niedrigste Einzelgebot!"); 
+    }
+    else {
+      $('#output').append("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
       console.log("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
+    }
   });
 
   $('#register').click(function(){
@@ -89,7 +113,7 @@ function getRemaing(dateString){
   var seconds = diff.getUTCSeconds();
   var houres = diff.getUTCHours();
   var minutes = diff.getUTCMinutes()
-  return("Zeit verbleibend: Tage: "+  days  +" Stunden: "+ houres + " Minuten: "+ minutes + " Sekunden: " + seconds );
+  return(days  +"d - "+ houres + ":"+ minutes + ":" + seconds );
 }
 
 function updateTime(){

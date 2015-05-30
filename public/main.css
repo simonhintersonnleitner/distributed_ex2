@@ -1,0 +1,8 @@
+.container {
+	width: 1000px;
+	padding-top: 30px;
+}
+.row { 
+	padding-left: 15px;
+	padding-right: 15px;
+}
