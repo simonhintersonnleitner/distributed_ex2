@@ -4,21 +4,27 @@ $(document).ready(function (){
 
   $('#logout').hide();
   $('#delete').hide();
+  $('#header').hide();
 
   $('#logout').click(function(){
     console.log('logout');
     socket.emit('logout');
-    socket.on('logout_result', function(res){
-      changeOutputText(res,"danger");
-    });
+  });
+
+  socket.on('disconnect', function(res){
+      changeOutputText("You have been disconnected!","warning");
+      $('#login').show();
+      $('#register').show();
+      $('#form_user').show();
+      $('#form_pw').show();
+      $('#logout').hide();
+      $('#delete').hide();
+      $('#articleList').empty();
   });
 
   $('#delete').click(function(){
     console.log('delete');
     socket.emit('delete');
-    socket.on('delete_result', function(res){
-       changeOutputText(res,"danger");
-    });
   });
 
   $('#pw').keydown(function(e) {
@@ -52,18 +58,17 @@ $(document).ready(function (){
   });
 
   socket.on('list_auctions_result', function(res){
-        console.log("res")
-        console.log(res);
-
-        res.forEach(function(auction){
-         addNewAuction(auction);
-
-        });
+        
+        $('#header').show();
 
         if(res.length == 0){
           $('#articleList').find('#output').remove();
           $('#articleList').append('<tr id=output>');
           $('#articleList').find('#output').append('<td>no runnig auction found!</td><td></td><td></td><td></td><td></td><td></td>')
+        }else{
+          res.forEach(function(auction){
+          addNewAuction(auction);
+          });
         }
 
       socket.on('register_result', function(res){
