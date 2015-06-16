@@ -17,12 +17,18 @@ var UserModel = function(user, pw) {
   this._userName = user;
   this._pwd = pw;
   this.socket;
+
   this.logout = function(){
     if(io.sockets.connected[this.socket]){
-      console.log('logout')
       io.sockets.connected[this.socket].disconnect();
     }
   };
+
+  this.delete = function() {
+    this.logout();
+    userList = _.without(userList, _.findWhere(userList, {_userName: this._userName}));
+  };
+
   userList.push(this);
 }
 
@@ -68,10 +74,6 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
   this._endsAt = endsAt;
   this._bids = [];
   this._ended = false;
-
-  this.checkBid = function(bid){
-
-  };
 
   this.endAuction = function(){
     this._ended = true;
@@ -207,7 +209,6 @@ io.on('connection', function(socket){
       var user = UserModel.prototype.findUser(username);
       user.socket = socket.id;
       io.emit('login_result', 1);
-
     }
     else
       io.emit('login_result', 0);
@@ -217,6 +218,12 @@ io.on('connection', function(socket){
   socket.on('logout', function(){
       var user = UserModel.prototype.findUser(socket.username);
       user.logout();
+    });
+
+  //Delete Account
+  socket.on('delete', function(){
+      var user = UserModel.prototype.findUser(socket.username);
+      user.delete();
     });
 
   //List Articles
@@ -233,10 +240,7 @@ io.on('connection', function(socket){
   socket.on('check_bid', function(auctionId) {
     io.emit('check_bid_result', AuctionModel.prototype.checkBid(socket.username, auctionId));
   });
-
-
 });
-
 
 
 //seeds
