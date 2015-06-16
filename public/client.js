@@ -1,5 +1,5 @@
 var socket = io.connect('http://localhost', {path: "/public/socket.io"});
-
+var loggedIn = false;
 $(document).ready(function (){
 
   $('#logout').hide();
@@ -12,11 +12,13 @@ $(document).ready(function (){
   });
 
   socket.on('disconnect', function(res){
+    loggedIn = false;
     changeOutputText("Conncection lost!","danger");
     logout();
   });
 
   socket.on('logout_result', function(res){
+    loggedIn = false;
     changeOutputText("You have been loged out!","warning");
     logout();
   });
@@ -40,12 +42,15 @@ $(document).ready(function (){
   $('#login').click(function(){
     socket.emit('login', $('#user').val(),$('#pw').val());
   });
-
   socket.on('login_result', function(res){
+
+
           console.log('login_result');
 
     if(res == 1)
     {
+
+      loggedIn = true;
       $('#login').hide();
       $('#register').hide();
       $('#form_user').hide();
@@ -78,30 +83,33 @@ $(document).ready(function (){
       socket.on('register_result', function(res){
         console.log("register_result " + res);
 
-        if(res == 1)
+        if(res == 1){
+          loggedIn = true;
           changeOutputText("Registration success",'success');
+        }
         else
           changeOutputText("Registration failed!",'danger');
       });
 
       socket.on('auction_ended', function(auctionId){
-        console.log("auction_ended id:" + auctionId);
-        $('#time_' + auctionId).remove();
-        $('#bidform_' + auctionId).remove();
-        $('#check_' + auctionId).remove();
-        $('#row_' + auctionId).find('td').eq(3).empty();
-        $('#row_' + auctionId).find('td').eq(3).append("Time is over!")
+        if(loggedIn){
+          console.log("auction_ended id:" + auctionId);
+          $('#time_' + auctionId).remove();
+          $('#bidform_' + auctionId).remove();
+          $('#check_' + auctionId).remove();
+          $('#row_' + auctionId).find('td').eq(3).empty();
+          $('#row_' + auctionId).find('td').eq(3).append("Time is over!")
+        }
       });
 
       socket.on('win_result', function(res){
-        console.log("Winning" + res);
-        $('#row_' + res).find('td').eq(4).append("You have won this auction!")
+        if(loggedIn)
+          $('#row_' + res).find('td').eq(4).append("You have won this auction!")
       });
 
       socket.on('new_auction', function(auction){
-        console.log("new_auction");
-        console.log(auction);
-        addNewAuction(auction);
+        if(loggedIn)
+          addNewAuction(auction);
     });
   });
 
@@ -130,6 +138,10 @@ $(document).ready(function (){
     }
     else if(res == 1) {
       $('#output').append("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
+      console.log("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
+    }
+    else if(res == -2) {
+      $('#output').append("<insert text here>");
       console.log("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
     }
     else {
