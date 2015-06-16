@@ -12,10 +12,17 @@ var userList = [];
 var articleList = [];
 var auctionList = [];
 
+//User model
 var UserModel = function(user, pw) {
   this._userName = user;
   this._pwd = pw;
   this.socket;
+  this.logout = function(){
+    if(io.sockets.connected[this.socket]){
+      console.log('logout')
+      io.sockets.connected[this.socket].disconnect();
+    }
+  };
   userList.push(this);
 }
 
@@ -28,6 +35,7 @@ UserModel.prototype = {
   }
 }
 
+//article model
 var ArticleModel = function(name, description, price) {
   if(articleList.length > 0) {
     this._id = articleList[articleList.length - 1]._id + 1;
@@ -100,25 +108,26 @@ AuctionModel.prototype = {
   },
   newBid: function(auctionId, value, username) {
     var auction = AuctionModel.prototype.getAuction(auctionId);
-    if(auction._ended || value <= 0 || typeof value !== "number"){
-      return -2;
-    }
-    var bid = new BidModel(value, username);
-    auction._bids.push(bid);
 
-    //check bid
-    var count = _.filter(auction._bids, function(b) {
-      return b._value === bid._value;
-    }).length;
+    if(!auction._ended || value > 0 || !isNaN(parseFloat(value)) ){
+      var bid = new BidModel(value, username);
+      auction._bids.push(bid);
 
-    if (count === 1) {
-      var winningBid = AuctionModel.prototype.getWinningBid(auction);
+      //check bid
+      var count = _.filter(auction._bids, function(b) {
+        return b._value === bid._value;
+      }).length;
 
-      if(winningBid._value === bid._value){
-        return -1;
+      if (count === 1) {
+        var winningBid = AuctionModel.prototype.getWinningBid(auction);
+
+        if(winningBid._value === bid._value){
+          return -1;
+        }
       }
+      return count;
     }
-    return count;
+    return -2;
   },
   getWinningBid: function(auction) {
     var sortedBids = _.sortBy(auction._bids, function(b){
@@ -203,6 +212,12 @@ io.on('connection', function(socket){
     else
       io.emit('login_result', 0);
   });
+
+  //Logout
+  socket.on('logout', function(){
+      var user = UserModel.prototype.findUser(socket.username);
+      user.logout();
+    });
 
   //List Articles
   socket.on('list_auctions', function(){
