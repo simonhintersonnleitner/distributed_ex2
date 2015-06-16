@@ -131,7 +131,7 @@ $(document).ready(function (){
 
   socket.on('win_result', function(res){
     console.log("Winning" + res);
-   $('#row_' + res._id).find('td').eq(3).append("You have win this auction!")
+    $('#row_' + res).find('td').eq(4).append("You have won this auction!")
   });
 
 });
