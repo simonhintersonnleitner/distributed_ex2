@@ -99,8 +99,13 @@ AuctionModel.prototype = {
     return _.find(auctionList, function(a){return a._id === auctionId});
   },
   newBid: function(auctionId, value, username) {
-    var bid = new BidModel(value, username);
     var auction = AuctionModel.prototype.getAuction(auctionId);
+    if(auction._ended || value <= 0){
+      return -2;
+    }
+    var bid = new BidModel(value, username);
+
+
     auction._bids.push(bid);
 
     //check bid
