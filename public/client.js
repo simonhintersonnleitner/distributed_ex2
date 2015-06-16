@@ -38,6 +38,7 @@ $(document).ready(function (){
         console.log(res);
 
         res.forEach(function(auction){
+          $('#articleList').find('#output').remove();
           $('#articleList').find("#row_"+auction._id).remove();
           $('#articleList').append("<tr id='row_"+auction._id+"''>");
           $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._name+"</td>");
@@ -126,6 +127,7 @@ $(document).ready(function (){
     $('#time_' + auctionId).remove();
     $('#bidform_' + auctionId).remove();
     $('#check_' + auctionId).remove();
+    $('#row_' + auctionId).find('td').eq(3).empty();
     $('#row_' + auctionId).find('td').eq(3).append("Time is over!")
   });
 
