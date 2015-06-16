@@ -23,7 +23,7 @@ var UserModel = function(user, pw) {
   };
 
   this.delete = function() {
-    this.logout();
+    io.sockets.connected[this.socket].emit('delete_result');
     userList = _.without(userList, _.findWhere(userList, {_userName: this._userName}));
   };
 
@@ -217,14 +217,15 @@ io.on('connection', function(socket){
       var user = UserModel.prototype.findUser(socket.username);
       socket.username = '';
       user.logout();
+      io.emit('logout_result');
     });
 
   //Delete Account
   socket.on('delete', function(){
-      var user = UserModel.prototype.findUser(socket.username);
-      socket.username = '';
-      user.delete();
-    });
+    var user = UserModel.prototype.findUser(socket.username);
+    socket.username = '';
+    user.delete();
+  });
 
   //List Articles
   socket.on('list_auctions', function(){
