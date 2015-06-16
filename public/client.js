@@ -29,8 +29,8 @@ $(document).ready(function (){
           $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._name+"</td>");
           $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._description+"</td>");
           $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._regularPrice+" €</td>");
-          $('#articleList').find("#row_"+auction._id).append("<td><div class='time' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></td>");
-          $('#articleList').find("#row_"+auction._id).append("<td><div class='form-inline'><input type='text'  id='value_"+auction._id+"' class='form-control'><button class='btn btn-default' id='bid' data-id="+auction._id+">Bid</button></div></td>");
+          $('#articleList').find("#row_"+auction._id).append("<td><div class='time' id='time_"+auction._id+"' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></td>");
+          $('#articleList').find("#row_"+auction._id).append("<td><div class='form-inline'><input type='text'  id='value_"+auction._id+"' class='form-control'><button class='btn btn-default bid' data-id="+auction._id+">Bid</button></div></td>");
           $('#articleList').find("#row_"+auction._id).append("<td><button class='btn btn-default' id='check' data-id="+auction._id+">Check</button></td>");
           $('#articleList').append("</tr>");
 
@@ -38,10 +38,11 @@ $(document).ready(function (){
           //$('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
           //$('#articleList').append("<button class='check' data-id="+auction._id+">CheckBid</button>");
 
-          setInterval(function() {updateTime();}, 1000);
+          setInterval(function() {updateTime(auction._id);}, 1000);
         });
 
-        $('#bid').click(function() {
+        $('.bid').click(function() {
+          console.log("bidclick");
           var auctionId = $(this).data('id');
           var value = $('#value_' + auctionId).val();
           socket.emit('new_bid', auctionId, value);
@@ -116,10 +117,10 @@ function getRemaing(dateString){
   return(days  +"d - "+ houres + ":"+ minutes + ":" + seconds );
 }
 
-function updateTime(){
+function updateTime(auctionId){
   var remainingTime = getRemaing($('.time').data('end'));
-  $('.time').empty();
-  $('.time').append(remainingTime);
+  $('#time_' + auctionId).empty();
+  $('#time_' + auctionId).append(remainingTime);
 
 }
 
