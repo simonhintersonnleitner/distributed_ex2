@@ -42,6 +42,7 @@ ArticleModel.prototype = {
   }
 }
 
+//AuctionModel
 var AuctionModel = function(articleId, beganAt, endsAt) {
   // this._id = _.max(articleList, function(article){ return article.id; }) + 1;
   this._id = auctionList.length; //Gefährlich!!!!!
@@ -54,11 +55,18 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
   this.checkBid = function(bid){
 
   };
+
+  this.endAuction = function(){
+    this._ended = true;
+    io.emit('auction_ended', 1);
+
+  };
   auctionList.push(this);
 }
+
 AuctionModel.prototype = {
   getLiveAuctions: function() {
-    return _.filter(auctionList, function(auc){ return auc._endsAt > Date.now(); });
+    return _.filter(auctionList, function(auc){ return !auc._enden; });
   },
   getAuction: function(auctionId) {
     return _.find(auctionList, function(a){return a._id === auctionId});
@@ -95,10 +103,11 @@ AuctionModel.prototype = {
 
       if ( amount === 1 ) {
         winningBid = sortedBids[i];
-        break;
+        return winningBid;
+
       }
     }
-    return winningBid;
+    return false;
   },
   checkBid: function(username, auctionId) {
     var user = UserModel.prototype.findUser(username);
@@ -112,6 +121,19 @@ AuctionModel.prototype = {
       return 1;
 
     return 0;
+  },
+  //check if auctions have ended
+  checkForEndedAuctions: function() {
+    for (var i = 0; i < auctionList.length; i++) {
+      var ends = auctionList[i]._endsAt;
+      var now = Date.now();
+
+      if(now >= ends && !auctionList[i]._ended) {
+        console.log('Time up!');
+        console.log(auctionList[i]._id);
+        auctionList[i].endAuction();
+      }
+    }
   }
 }
 
@@ -127,7 +149,7 @@ function authenticate(username, pw) {
   return true;
 }
 
-
+//socket functions
 io.on('connection', function(socket){
   //Register
   socket.on('register', function(user,pw){
@@ -163,17 +185,24 @@ io.on('connection', function(socket){
   });
 });
 
+
+
 //seeds
 u1 = new UserModel("Fabi", "abc")
 u2 = new UserModel("Simon", "abc")
 a1 = new ArticleModel("Teller", "Schöner Teller", 5)
 a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
 a3 = new ArticleModel("Bier", "hmm", 15)
-au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 60 * 5)
-au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 60 * 5)
+au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 10 )
+au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 20 )
 au3 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 5)
 new AuctionModel.prototype.newBid(0, 5, "Fabi");
 new AuctionModel.prototype.newBid(0, 6, "Simon");
+
+//call checkForEndedAuctions every 1/2 sec
+setInterval(function() {
+  AuctionModel.prototype.checkForEndedAuctions();
+}, 500);
 
 http.listen(3000, function(){
   console.log('listening on *:3000');
