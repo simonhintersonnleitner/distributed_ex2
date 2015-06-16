@@ -29,8 +29,12 @@ UserModel.prototype = {
 }
 
 var ArticleModel = function(name, description, price) {
-  // this._id = _.max(articleList, function(article){ return article.id; }) + 1;
-  this._id = articleList.length; //Gefährlich!!!!!
+  if(articleList.length > 0) {
+    this._id = articleList[articleList.length - 1]._id + 1;
+  }
+  else {
+    this._id = 0;
+  }
   this._name = name;
   this._description = description;
   this._regularPrice = price;
@@ -45,8 +49,12 @@ ArticleModel.prototype = {
 
 //AuctionModel
 var AuctionModel = function(articleId, beganAt, endsAt) {
-  // this._id = _.max(articleList, function(article){ return article.id; }) + 1;
-  this._id = auctionList.length; //Gefährlich!!!!!
+    if(auctionList.length > 0) {
+    this._id = auctionList[auctionList.length - 1]._id + 1;
+  }
+  else {
+    this._id = 0;
+  }
   this._article = ArticleModel.prototype.getArticleById(articleId);
   this._beganAt = beganAt;
   this._endsAt = endsAt;
@@ -77,10 +85,10 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
     }
     else { //Restart auction
       new AuctionModel(this._article._id, Date.now(), Date.now() + 1000 * 60 * 5);
+      io.emit('new_auction', this);
     }
   };
   auctionList.push(this);
-  io.emit('new_auction', this);
 }
 
 AuctionModel.prototype = {
