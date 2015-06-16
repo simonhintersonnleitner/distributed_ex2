@@ -58,7 +58,7 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
 
   this.endAuction = function(){
     this._ended = true;
-    io.emit('auction_ended', 1);
+    io.emit('auction_ended', this._id);
 
   };
   auctionList.push(this);
@@ -66,7 +66,7 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
 
 AuctionModel.prototype = {
   getLiveAuctions: function() {
-    return _.filter(auctionList, function(auc){ return !auc._enden; });
+    return _.filter(auctionList, function(auc){ return !auc._enden && auc._endsAt > Date.now(); });
   },
   getAuction: function(auctionId) {
     return _.find(auctionList, function(a){return a._id === auctionId});
@@ -193,8 +193,8 @@ u2 = new UserModel("Simon", "abc")
 a1 = new ArticleModel("Teller", "Schöner Teller", 5)
 a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
 a3 = new ArticleModel("Bier", "hmm", 15)
-au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 10 )
-au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 20 )
+au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 60 )
+au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 25 )
 au3 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 5)
 new AuctionModel.prototype.newBid(0, 5, "Fabi");
 new AuctionModel.prototype.newBid(0, 6, "Simon");
