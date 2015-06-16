@@ -1,9 +1,27 @@
 var socket = io.connect('http://localhost', {path: "/public/socket.io"});
 
 $(document).ready(function (){
+
+  $('#logout').hide();
+  $('#delete').hide();
+  
   $('#login').click(function(){
     login();
 
+  });
+
+  $('#logout').click(function(){
+    socket.emit('logout');
+    socket.on('logout_result', function(res){
+      changeOutputText(res,"danger");
+    });
+  });
+
+  $('#delete').click(function(){
+    socket.emit('delete');
+    socket.on('delete_result', function(res){
+       changeOutputText(res,"danger");
+    });
   });
 
   $('#pw').keydown(function(e) {
@@ -17,20 +35,22 @@ $(document).ready(function (){
   });
 
   socket.on('login_result', function(res){
-    console.log("login_result " + res);
-    $('#output').empty();
+
     if(res == 1)
     {
-      // $('#login').prop( "disabled", true );
-      // $('#register').prop( "disabled", true );
-      $('#login-form').hide();
-      $('#output').append("Login erflogreich!");
-      $('#output').removeClass('alert-warning');
-      $('#output').addClass('alert-success');
+      $('#login').hide();
+      $('#register').hide();
+      $('#form_user').hide();
+      $('#form_pw').hide();
+      $('#logout').show();
+      $('#delete').show();
+
+      changeOutputText("Login successfull!","success");
+
       socket.emit('list_auctions');
     }
    	else
-   		$('#output').append("<p>Login nicht erflogreich!</p>");
+   		changeOutputText("Login  failed!","danger");
   });
 
   socket.on('list_auctions_result', function(res){
@@ -63,24 +83,51 @@ $(document).ready(function (){
           var auctionId = $(this).data('id');
           socket.emit('check_bid', auctionId);
         });
+
+
+        socket.on('register_result', function(res){
+        console.log("register_result " + res);
+        $('#output').empty();
+        if(res == 1)
+          changeOutputText("Registration success",'success');
+        else
+          changeOutputText("Registration failed!",'danger');
+      });
+
+      socket.on('auction_ended', function(auctionId){
+        console.log("auction_ended id:" + auctionId);
+        $('#time_' + auctionId).remove();
+        $('#bidform_' + auctionId).remove();
+        $('#check_' + auctionId).remove();
+        $('#row_' + auctionId).find('td').eq(3).empty();
+        $('#row_' + auctionId).find('td').eq(3).append("Time is over!")
+      });
+
+      socket.on('win_result', function(res){
+        console.log("Winning" + res);
+        $('#row_' + res).find('td').eq(4).append("You have won this auction!")
+      });
+
+      socket.on('new_auction', function(auction){
+        console.log("new_auction");
+        console.log(auction);
+        addNewAuction(auction);
+    });
   });
+
   socket.on('new_bid_result', function(res){
     $('#output').empty();
     if(res == -1) {
-      changeClassOfOutput('success');
-      $('#output').append("Concratulation you have the lowest single-bid!");
+      changeOutputText("Concratulation you have the lowest single-bid!",'success');
     }
     else if(res == 1) {
-      changeClassOfOutput('warning');
-      $('#output').append("You have an single-bid but its to high");
+      changeOutputText("You have an single-bid but its to high",'warning');
     }
     else if(res == -2) {
-      changeClassOfOutput('danger');
-      $('#output').append("The auction ist timed out or the bid is invalid");
+      changeOutputText("The auction ist timed out or the bid is invalid",'danger');
     }
     else {
-      changeClassOfOutput('warning');
-      $('#output').append(res + " other people have the same bid as you!");
+      changeOutputText(res + " other people have the same bid as you!",'warning');
     }
   });
 
@@ -105,34 +152,7 @@ $(document).ready(function (){
   socket.emit('register', $('#user').val(),$('#pw').val());
   });
 
-  socket.on('register_result', function(res){
-    console.log("register_result " + res);
-    $('#output').empty();
-    if(res == 1)
-      $('#output').append("Registierung erflogreich!");
-    else
-      $('#output').append("Registierung nicht erflogreich!");
-  });
-
-  socket.on('auction_ended', function(auctionId){
-    console.log("auction_ended id:" + auctionId);
-    $('#time_' + auctionId).remove();
-    $('#bidform_' + auctionId).remove();
-    $('#check_' + auctionId).remove();
-    $('#row_' + auctionId).find('td').eq(3).empty();
-    $('#row_' + auctionId).find('td').eq(3).append("Time is over!")
-  });
-
-  socket.on('win_result', function(res){
-    console.log("Winning" + res);
-    $('#row_' + res).find('td').eq(4).append("You have won this auction!")
-  });
-
-  socket.on('new_auction', function(auction){
-    console.log("new_auction");
-    console.log(auction);
-    addNewAuction(auction);
-  });
+  
 
 });
 
@@ -200,7 +220,9 @@ function updateTime(auctionId){
   $('#time_' + auctionId).append(remainingTime);
 
 }
-function changeClassOfOutput(mode){
+function changeOutputText(msg,mode){
+  $('#output').empty();
+  $('#output').append(msg);
   $('#output').removeClass('alert-danger');
   $('#output').removeClass('alert-warning');
   $('#output').removeClass('alert-success');
