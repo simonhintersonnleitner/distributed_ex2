@@ -76,11 +76,12 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
       }
     }
     else { //Restart auction
-      new AuctionModel(this._article._id, Date.now(), Date.now() + 1000 * 60 * 5);
+      var auction = new AuctionModel(this._article._id, Date.now(), Date.now() + 1000 * 60 * 1);
+      io.emit('new_auction', auction);
     }
   };
   auctionList.push(this);
-  io.emit('new_auction', this);
+  
 }
 
 AuctionModel.prototype = {
@@ -221,7 +222,7 @@ a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
 a3 = new ArticleModel("Bier", "hmm", 15)
 au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 30 )
 au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 25 )
-au3 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 5)
+au3 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 1)
 new AuctionModel.prototype.newBid(0, 5, "Fabi");
 new AuctionModel.prototype.newBid(0, 6, "Simon");
 new AuctionModel.prototype.newBid(1, 7, "Fabi");
