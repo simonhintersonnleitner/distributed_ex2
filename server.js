@@ -100,12 +100,10 @@ AuctionModel.prototype = {
   },
   newBid: function(auctionId, value, username) {
     var auction = AuctionModel.prototype.getAuction(auctionId);
-    if(auction._ended || value <= 0){
+    if(auction._ended || value <= 0 || typeof value !== "number"){
       return -2;
     }
     var bid = new BidModel(value, username);
-
-
     auction._bids.push(bid);
 
     //check bid
