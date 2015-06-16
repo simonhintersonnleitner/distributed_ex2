@@ -9,7 +9,6 @@ $(document).ready(function (){
     console.log('logout');
     socket.emit('logout');
     socket.on('logout_result', function(res){
-      console.log(res);
       changeOutputText(res,"danger");
     });
   });
@@ -33,6 +32,7 @@ $(document).ready(function (){
   });
 
   socket.on('login_result', function(res){
+          console.log('login_result');
 
     if(res == 1)
     {
@@ -66,26 +66,9 @@ $(document).ready(function (){
           $('#articleList').find('#output').append('<td>no runnig auction found!</td><td></td><td></td><td></td><td></td><td></td>')
         }
 
-
-        $('.bid').click(function() {
-          bid(this);
-        });
-
-        $('.bid_value').keydown(function(e) {
-          if (e.keyCode == 13) {
-              bid(this);
-          }
-        });
-
-        $('.check').click(function() {
-          var auctionId = $(this).data('id');
-          socket.emit('check_bid', auctionId);
-        });
-
-
-        socket.on('register_result', function(res){
+      socket.on('register_result', function(res){
         console.log("register_result " + res);
-        $('#output').empty();
+
         if(res == 1)
           changeOutputText("Registration success",'success');
         else
@@ -171,6 +154,7 @@ function addNewAuction(auction) {
 }
 
 function activateButtons(){
+  $('.bid').off();
   $('.bid').click(function() {
     bid(this);
   });
@@ -180,7 +164,7 @@ function activateButtons(){
         bid(this);
     }
   });
-
+  $('.check').off();
   $('.check').click(function() {
     var auctionId = $(this).data('id');
     socket.emit('check_bid', auctionId);
@@ -191,7 +175,8 @@ function login() {
   socket.emit('login', $('#user').val(),$('#pw').val());
 }
 
-function bid(that) {
+function bid(that){
+  console.log('bid!');
   var auctionId = $(that).data('id');
   var value = $('#value_' + auctionId).val();
   socket.emit('new_bid', auctionId, value);
