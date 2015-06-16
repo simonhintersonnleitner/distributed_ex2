@@ -29,8 +29,12 @@ UserModel.prototype = {
 }
 
 var ArticleModel = function(name, description, price) {
-  // this._id = _.max(articleList, function(article){ return article.id; }) + 1;
-  this._id = articleList.length; //Gefährlich!!!!!
+  if(articleList.length > 0) {
+    this._id = articleList[articleList.length - 1]._id + 1;
+  }
+  else {
+    this._id = 0;
+  }
   this._name = name;
   this._description = description;
   this._regularPrice = price;
@@ -45,8 +49,12 @@ ArticleModel.prototype = {
 
 //AuctionModel
 var AuctionModel = function(articleId, beganAt, endsAt) {
-  // this._id = _.max(articleList, function(article){ return article.id; }) + 1;
-  this._id = auctionList.length; //Gefährlich!!!!!
+    if(auctionList.length > 0) {
+    this._id = auctionList[auctionList.length - 1]._id + 1;
+  }
+  else {
+    this._id = 0;
+  }
   this._article = ArticleModel.prototype.getArticleById(articleId);
   this._beganAt = beganAt;
   this._endsAt = endsAt;
@@ -81,7 +89,6 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
     }
   };
   auctionList.push(this);
-  
 }
 
 AuctionModel.prototype = {
@@ -92,8 +99,13 @@ AuctionModel.prototype = {
     return _.find(auctionList, function(a){return a._id === auctionId});
   },
   newBid: function(auctionId, value, username) {
-    var bid = new BidModel(value, username);
     var auction = AuctionModel.prototype.getAuction(auctionId);
+    if(auction._ended || value <= 0){
+      return -2;
+    }
+    var bid = new BidModel(value, username);
+
+
     auction._bids.push(bid);
 
     //check bid
