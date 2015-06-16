@@ -67,20 +67,20 @@ $(document).ready(function (){
   socket.on('new_bid_result', function(res){
     $('#output').empty();
     if(res == -1) {
-      $('#output').append("Glückwunsch Sie haben das niedrigste Einzelgebot!");
-      console.log("Glückwunsch Sie haben das niedrigste Einzelgebot!");
+      changeClassOfOutput('success');
+      $('#output').append("Concratulation you have the lowest single-bid!");
     }
     else if(res == 1) {
-      $('#output').append("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
-      console.log("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
+      changeClassOfOutput('warning');
+      $('#output').append("You have an single-bid but its to high");
     }
     else if(res == -2) {
-      $('#output').append("Die Auktion ist abgelaufen!");
-      console.log("Die Auktion ist abgelaufen!");
+      changeClassOfOutput('danger');
+      $('#output').append("The auction ist timed out or the bid is invalid");
     }
     else {
-      $('#output').append("Es haben " + res + " Personen das gleiche Gebot wie Sie!");
-      console.log("Es haben " + res + " Personen das gleiche Gebot wie Sie!");
+      changeClassOfOutput('warning');
+      $('#output').append(res + " other people have the same bid as you!");
     }
   });
 
@@ -199,5 +199,11 @@ function updateTime(auctionId){
   $('#time_' + auctionId).empty();
   $('#time_' + auctionId).append(remainingTime);
 
+}
+function changeClassOfOutput(mode){
+  $('#output').removeClass('alert-danger');
+  $('#output').removeClass('alert-warning');
+  $('#output').removeClass('alert-success');
+  $('#output').addClass('alert-' + mode);
 }
 
