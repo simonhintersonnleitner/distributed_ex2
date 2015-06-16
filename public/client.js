@@ -38,19 +38,7 @@ $(document).ready(function (){
         console.log(res);
 
         res.forEach(function(auction){
-          $('#articleList').find('#output').remove();
-          $('#articleList').find("#row_"+auction._id).remove();
-          $('#articleList').append("<tr id='row_"+auction._id+"''>");
-          $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._name+"</td>");
-          $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._description+"</td>");
-          $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._regularPrice+" €</td>");
-
-          $('#articleList').find("#row_"+auction._id).append("<td><div class='time' id='time_"+auction._id+"' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></td>");
-          $('#articleList').find("#row_"+auction._id).append("<td><div class='form-inline' id='bidform_"+auction._id+"'><input type='text'  id='value_"+auction._id+"' data-id="+auction._id+" class='form-control bid_value'><button class='btn btn-default bid' data-id="+auction._id+">Bid</button></div></td>");
-          $('#articleList').find("#row_"+auction._id).append("<td><button class='btn btn-default check' id='check_"+auction._id+"' data-id="+auction._id+">Check</button></td>");
-          $('#articleList').append("</tr>");
-
-          setInterval(function() {updateTime(auction._id);}, 500);
+         addNewAuction(auction);
 
         });
 
@@ -85,6 +73,10 @@ $(document).ready(function (){
     else if(res == 1) {
       $('#output').append("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
       console.log("Sie haben ein Einzelgebot allerdings ist es zu hoch!");
+    }
+    else if(res == -2) {
+      $('#output').append("Die Auktion ist abgelaufen!");
+      console.log("Die Auktion ist abgelaufen!");
     }
     else {
       $('#output').append("Es haben " + res + " Personen das gleiche Gebot wie Sie!");
@@ -136,7 +128,46 @@ $(document).ready(function (){
     $('#row_' + res).find('td').eq(4).append("You have won this auction!")
   });
 
+  socket.on('new_auction', function(auction){
+    console.log("new_auction");
+    console.log(auction);
+    addNewAuction(auction);
+  });
+
 });
+
+function addNewAuction(auction) {
+  $('#articleList').find('#output').remove();
+  $('#articleList').find("#row_"+auction._id).remove();
+  $('#articleList').append("<tr id='row_"+auction._id+"''>");
+  $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._name+"</td>");
+  $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._description+"</td>");
+  $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._regularPrice+" €</td>");
+
+  $('#articleList').find("#row_"+auction._id).append("<td><div class='time' id='time_"+auction._id+"' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></td>");
+  $('#articleList').find("#row_"+auction._id).append("<td><div class='form-inline' id='bidform_"+auction._id+"'><input type='text'  id='value_"+auction._id+"' data-id="+auction._id+" class='form-control bid_value'><button class='btn btn-default bid' data-id="+auction._id+">Bid</button></div></td>");
+  $('#articleList').find("#row_"+auction._id).append("<td><button class='btn btn-default check' id='check_"+auction._id+"' data-id="+auction._id+">Check</button></td>");
+  $('#articleList').append("</tr>");    
+  setInterval(function() {updateTime(auction._id);}, 1000);
+  activateButtons();
+}
+
+function activateButtons(){
+  $('.bid').click(function() {
+    bid(this);
+  });
+
+  $('.bid_value').keydown(function(e) {
+    if (e.keyCode == 13) {
+        bid(this);
+    }
+  });
+
+  $('.check').click(function() {
+    var auctionId = $(this).data('id');
+    socket.emit('check_bid', auctionId);
+  });
+} 
 
 function login() {
   socket.emit('login', $('#user').val(),$('#pw').val());
