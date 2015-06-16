@@ -25,6 +25,8 @@ $(document).ready(function (){
       // $('#register').prop( "disabled", true );
       $('#login-form').hide();
       $('#output').append("Login erflogreich!");
+      $('#output').removeClass('alert-warning');
+      $('#output').addClass('alert-success');
       socket.emit('list_auctions');
     }
    	else
@@ -43,16 +45,20 @@ $(document).ready(function (){
           $('#articleList').find("#row_"+auction._id).append("<td>"+auction._article._regularPrice+" €</td>");
 
           $('#articleList').find("#row_"+auction._id).append("<td><div class='time' id='time_"+auction._id+"' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></td>");
-          $('#articleList').find("#row_"+auction._id).append("<td><div class='form-inline'><input type='text'  id='value_"+auction._id+"' data-id="+auction._id+" class='form-control bid_value'><button class='btn btn-default bid' data-id="+auction._id+">Bid</button></div></td>");
-          $('#articleList').find("#row_"+auction._id).append("<td><button class='btn btn-default' id='check' data-id="+auction._id+">Check</button></td>");
+          $('#articleList').find("#row_"+auction._id).append("<td><div class='form-inline' id='bidform_"+auction._id+"'><input type='text'  id='value_"+auction._id+"' data-id="+auction._id+" class='form-control bid_value'><button class='btn btn-default bid' data-id="+auction._id+">Bid</button></div></td>");
+          $('#articleList').find("#row_"+auction._id).append("<td><button class='btn btn-default check' id='check_"+auction._id+"' data-id="+auction._id+">Check</button></td>");
           $('#articleList').append("</tr>");
 
-          //$('#articleList').append("<input type='text' id='value_"+auction._id+"'>");
-          //$('#articleList').append("<button class='bid' data-id="+auction._id+">Bieten</button>");
-          //$('#articleList').append("<button class='check' data-id="+auction._id+">CheckBid</button>");
+          setInterval(function() {updateTime(auction._id);}, 500);
 
-          setInterval(function() {updateTime(auction._id);}, 1000);
         });
+
+        if(res.length == 0){
+          $('#articleList').find('#output').remove();
+          $('#articleList').append('<tr id=output>');
+          $('#articleList').find('#output').append('<td>no runnig auction found!</td><td></td><td></td><td></td><td></td><td></td>')
+        }
+
 
         $('.bid').click(function() {
           bid(this);
@@ -64,7 +70,7 @@ $(document).ready(function (){
           }
         });
 
-        $('#check').click(function() {
+        $('.check').click(function() {
           var auctionId = $(this).data('id');
           socket.emit('check_bid', auctionId);
         });
@@ -114,6 +120,20 @@ $(document).ready(function (){
     else
       $('#output').append("Registierung nicht erflogreich!");
   });
+
+  socket.on('auction_ended', function(auctionId){
+    console.log("auction_ended id:" + auctionId);
+    $('#time_' + auctionId).remove();
+    $('#bidform_' + auctionId).remove();
+    $('#check_' + auctionId).remove();
+    $('#row_' + auctionId).find('td').eq(3).append("Time is over!")
+  });
+
+  socket.on('win_result', function(res){
+    console.log("Winning" + res);
+   $('#row_' + res._id).find('td').eq(3).append("You have win this auction!")
+  });
+
 });
 
 function login() {
@@ -132,11 +152,13 @@ function getRemaing(dateString){
   var date1 = new Date();
   var date2 = new Date(dateString);
   var diff = new Date(date2.getTime() - date1.getTime());
+
   var days = diff.getUTCDate()-1;
   var seconds = diff.getUTCSeconds();
   var houres = diff.getUTCHours();
   var minutes = diff.getUTCMinutes()
-  return(days  +"d - "+ houres + ":"+ minutes + ":" + seconds );
+  
+  return(days  +"d - "+ ('0' + houres).slice(-2) + ":"+ ('0' + minutes).slice(-2) + ":" + ('0' + seconds).slice(-2));
 }
 
 function updateTime(auctionId){
