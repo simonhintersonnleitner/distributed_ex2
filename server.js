@@ -19,9 +19,7 @@ var UserModel = function(user, pw) {
   this.socket;
 
   this.logout = function(){
-    if(io.sockets.connected[this.socket]){
-      io.sockets.connected[this.socket].disconnect();
-    }
+    this.socket = '';
   };
 
   this.delete = function() {
@@ -217,12 +215,14 @@ io.on('connection', function(socket){
   //Logout
   socket.on('logout', function(){
       var user = UserModel.prototype.findUser(socket.username);
+      socket.username = '';
       user.logout();
     });
 
   //Delete Account
   socket.on('delete', function(){
       var user = UserModel.prototype.findUser(socket.username);
+      socket.username = '';
       user.delete();
     });
 
