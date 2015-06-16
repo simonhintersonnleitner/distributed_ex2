@@ -15,6 +15,7 @@ var auctionList = [];
 var UserModel = function(user, pw) {
   this._userName = user;
   this._pwd = pw;
+  this.socket;
   userList.push(this);
 }
 
@@ -59,8 +60,23 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
   this.endAuction = function(){
     this._ended = true;
     io.emit('auction_ended', this._id);
-
+    this.notifyWinner();
   };
+
+  this.notifyWinner = function(){
+    var winningBid = AuctionModel.prototype.getWinningBid(this);
+      //is there a winningBid with a user?
+    if(winningBid._user) {
+      //if the user connected?
+      if(io.sockets.connected[winningBid._user.socket]){
+        io.sockets.connected[winningBid._user.socket].emit('win_result', this._id);
+      }
+      else{
+        //User not connected
+      }
+    }
+  };
+
   auctionList.push(this);
 }
 
@@ -94,7 +110,7 @@ AuctionModel.prototype = {
     var sortedBids = _.sortBy(auction._bids, function(b){
         return b._value;
       });
-    var winningBid = 'no single bid';
+    var winningBid = false;
 
     for (var i = 0; i < sortedBids.length; i++) {
       var amount = _.filter(sortedBids, function(b){
@@ -103,11 +119,11 @@ AuctionModel.prototype = {
 
       if ( amount === 1 ) {
         winningBid = sortedBids[i];
-        return winningBid;
+        break;
 
       }
     }
-    return false;
+    return winningBid;
   },
   checkBid: function(username, auctionId) {
     var user = UserModel.prototype.findUser(username);
@@ -115,12 +131,12 @@ AuctionModel.prototype = {
     var winningBid = AuctionModel.prototype.getWinningBid(auction);
 
     if (!_.find(auction._bids, function(b){ return b._user === user}))
-      return -1;
+      return -1; //no bid placed
 
     if(winningBid._user === user)
-      return 1;
+      return 1;//won
 
-    return 0;
+    return 0;//lost
   },
   //check if auctions have ended
   checkForEndedAuctions: function() {
@@ -132,6 +148,7 @@ AuctionModel.prototype = {
         console.log('Time up!');
         console.log(auctionList[i]._id);
         auctionList[i].endAuction();
+        // console.log(auctionList[i]);
       }
     }
   }
@@ -160,10 +177,13 @@ io.on('connection', function(socket){
   });
 
   //Login
-  socket.on('login', function(user,pw){
-  	if(authenticate(user, pw)) {
-      socket.username = user;
+  socket.on('login', function(username,pw){
+  	if(authenticate(username, pw)) {
+      socket.username = username;
+      var user = UserModel.prototype.findUser(username);
+      user.socket = socket.id;
       io.emit('login_result', 1);
+
     }
     else
       io.emit('login_result', 0);
@@ -183,6 +203,8 @@ io.on('connection', function(socket){
   socket.on('check_bid', function(auctionId) {
     io.emit('check_bid_result', AuctionModel.prototype.checkBid(socket.username, auctionId));
   });
+
+
 });
 
 
@@ -193,11 +215,13 @@ u2 = new UserModel("Simon", "abc")
 a1 = new ArticleModel("Teller", "Schöner Teller", 5)
 a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
 a3 = new ArticleModel("Bier", "hmm", 15)
-au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 60 )
-au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 25 )
+au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 20 )
+au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 15 )
 au3 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 5)
 new AuctionModel.prototype.newBid(0, 5, "Fabi");
 new AuctionModel.prototype.newBid(0, 6, "Simon");
+new AuctionModel.prototype.newBid(1, 7, "Fabi");
+new AuctionModel.prototype.newBid(1, 6, "Simon");
 
 //call checkForEndedAuctions every 1/2 sec
 setInterval(function() {
