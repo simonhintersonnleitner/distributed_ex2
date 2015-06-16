@@ -140,7 +140,7 @@ function getRemaing(dateString){
 }
 
 function updateTime(auctionId){
-  var remainingTime = getRemaing($('.time').data('end'));
+  var remainingTime = getRemaing($('#time_' + auctionId).data('end'));
   $('#time_' + auctionId).empty();
   $('#time_' + auctionId).append(remainingTime);
 
