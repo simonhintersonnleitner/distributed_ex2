@@ -12,14 +12,13 @@ $(document).ready(function (){
   });
 
   socket.on('disconnect', function(res){
-      changeOutputText("You have been disconnected!","warning");
-      $('#login').show();
-      $('#register').show();
-      $('#form_user').show();
-      $('#form_pw').show();
-      $('#logout').hide();
-      $('#delete').hide();
-      $('#articleList').empty();
+    changeOutputText("Conncection lost!","danger");
+    logout();
+  });
+
+  socket.on('logout_result', function(res){
+    changeOutputText("You have been loged out!","warning");
+    logout();
   });
 
   $('#delete').click(function(){
@@ -178,6 +177,16 @@ function activateButtons(){
 
 function login() {
   socket.emit('login', $('#user').val(),$('#pw').val());
+}
+
+function logout(){
+  $('#login').show();
+  $('#register').show();
+  $('#form_user').show();
+  $('#form_pw').show();
+  $('#logout').hide();
+  $('#delete').hide();
+  $('#articleList').empty();
 }
 
 function bid(that){
