@@ -4,20 +4,18 @@ $(document).ready(function (){
 
   $('#logout').hide();
   $('#delete').hide();
-  
-  $('#login').click(function(){
-    login();
-
-  });
 
   $('#logout').click(function(){
+    console.log('logout');
     socket.emit('logout');
     socket.on('logout_result', function(res){
+      console.log(res);
       changeOutputText(res,"danger");
     });
   });
 
   $('#delete').click(function(){
+    console.log('delete');
     socket.emit('delete');
     socket.on('delete_result', function(res){
        changeOutputText(res,"danger");
