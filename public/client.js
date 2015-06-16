@@ -26,6 +26,11 @@ $(document).ready(function (){
     socket.emit('delete');
   });
 
+  socket.on('delete_result', function(res){
+    changeOutputText("You have been deleted!","warning");
+    logout();
+  });
+
   $('#pw').keydown(function(e) {
     if (e.keyCode == 13) {
         login();
