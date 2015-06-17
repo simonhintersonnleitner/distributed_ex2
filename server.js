@@ -1,8 +1,9 @@
 var app = require('express')();
 var express = require('express');
 var http = require('http').Server(app);
-var io = require('socket.io')(http, {path: '/public/socket.io'})
 var _ = require('underscore');
+var amqp = require('amqplib');
+var when = require('when');
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(req, res){
@@ -191,57 +192,68 @@ function authenticate(username, pw) {
 
 //socket functions
 io.on('connection', function(socket){
-  //Register
-  socket.on('register', function(user,pw){
-    io.emit('register_result', 1);
-    var user = new UserModel(user, pw);
-    socket.username = user._userName;
-    user.socket = socket.id;
 
-  });
+  socket.on('request', msg){
 
-  //Login
-  socket.on('login', function(username,pw){
-  	if(authenticate(username, pw)) {
-      socket.username = username;
-      var user = UserModel.prototype.findUser(username);
-      user.socket = socket.id;
-      io.emit('login_result', 1);
-    }
-    else
-      io.emit('login_result', 0);
-  });
-
-  //Logout
-  socket.on('logout', function(){
-      var user = UserModel.prototype.findUser(socket.username);
-      socket.username = '';
-      user.logout();
-      io.emit('logout_result');
-    });
-
-  //Delete Account
-  socket.on('delete', function(){
-    var user = UserModel.prototype.findUser(socket.username);
-    socket.username = '';
-    user.delete();
-  });
-
-  //List Articles
-  socket.on('list_auctions', function(){
-    io.emit('list_auctions_result', AuctionModel.prototype.getLiveAuctions());
-  });
-
-  //New bid
-  socket.on('new_bid', function(auctionId, value) {
-    io.emit('new_bid_result', AuctionModel.prototype.newBid(auctionId, value, socket.username));
-  });
-
-  //check bid
-  socket.on('check_bid', function(auctionId) {
-    io.emit('check_bid_result', AuctionModel.prototype.checkBid(socket.username, auctionId));
-  });
+  }
 });
+
+
+// io.on('connection', function(socket){
+//   //Register
+//   socket.on('request', msg){
+
+//   }
+//   socket.on('register', function(user,pw){
+//     io.emit('register_result', 1);
+//     var user = new UserModel(user, pw);
+//     socket.username = user._userName;
+//     user.socket = socket.id;
+
+//   });
+
+//   //Login
+//   socket.on('login', function(username,pw){
+//   	if(authenticate(username, pw)) {
+//       socket.username = username;
+//       var user = UserModel.prototype.findUser(username);
+//       user.socket = socket.id;
+//       io.emit('login_result', 1);
+//     }
+//     else
+//       io.emit('login_result', 0);
+//   });
+
+//   //Logout
+//   socket.on('logout', function(){
+//       var user = UserModel.prototype.findUser(socket.username);
+//       socket.username = '';
+//       user.logout();
+//       io.emit('logout_result');
+//     });
+
+//   //Delete Account
+//   socket.on('delete', function(){
+//     var user = UserModel.prototype.findUser(socket.username);
+//     socket.username = '';
+//     user.delete();
+//   });
+
+//   //List Articles
+//   socket.on('list_auctions', function(){
+//     io.emit('list_auctions_result', AuctionModel.prototype.getLiveAuctions());
+//   });
+
+//   //New bid
+//   socket.on('new_bid', function(auctionId, value) {
+//     io.emit('new_bid_result', AuctionModel.prototype.newBid(auctionId, value, socket.username));
+//   });
+
+//   //check bid
+//   socket.on('check_bid', function(auctionId) {
+//     io.emit('check_bid_result', AuctionModel.prototype.checkBid(socket.username, auctionId));
+//   });
+// });
 
 
 //seeds

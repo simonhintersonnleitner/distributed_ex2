@@ -4,8 +4,10 @@
   "main": "server.js",
   "description": "First Implemenation",
   "dependencies": {
+    "amqplib": "^0.3.2",
     "express": "4.10.2",
     "socket.io": "1.2.0",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "when": "^3.7.3"
   }
 }
