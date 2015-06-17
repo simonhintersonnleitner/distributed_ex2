@@ -1,3 +1,9 @@
+/*
+ @Authors:
+ Simon Hintersonnleitner
+ Fabin Hoffmann
+*/
+
 var _ = require('underscore');
 var amqp = require('amqplib');
 var when = require('when');
@@ -7,6 +13,7 @@ var userList = [];
 var articleList = [];
 var auctionList = [];
 
+//rabbit scope
 amqp.connect('amqp://localhost').then(function(conn) {
   //Send message to Queue
   function send(msg){
@@ -47,10 +54,10 @@ amqp.connect('amqp://localhost').then(function(conn) {
     else {
       this._id = 0;
     }
+
     this._name = name;
     this._description = description;
     this._regularPrice = price;
-    this._imageUrl = "";
     articleList.push(this);
   }
   ArticleModel.prototype = {
@@ -189,16 +196,35 @@ amqp.connect('amqp://localhost').then(function(conn) {
 
   u1 = new UserModel("Fabi", "abc")
   u2 = new UserModel("Simon", "abc")
-  a1 = new ArticleModel("Teller", "Schöner Teller", 5)
-  a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
-  a3 = new ArticleModel("Bier", "hmm", 15)
-  au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 20 )
-  au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 45 )
-  au3 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 1)
-  new AuctionModel.prototype.newBid(0, 5, "Fabi");
-  new AuctionModel.prototype.newBid(0, 6, "Simon");
-  new AuctionModel.prototype.newBid(1, 7, "Fabi");
-  new AuctionModel.prototype.newBid(1, 6, "Simon");
+
+  a1 = new ArticleModel("Breitling 320", "Beautiful Watch", 7000)
+  a2 = new ArticleModel("Samsung S27C450", "Perfect business monitor", 300)
+  a3 = new ArticleModel("Cuban Cigar", "Legal to buy", 600)
+  a4 = new ArticleModel("iPhone 6 Plus", "Fance huge phone", 800)
+  a5 = new ArticleModel("MacBook Pro 13\" retina", "Web developer\'s choice", 1200)
+
+  au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 60 * 1)
+  au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 60 * 2)
+  au3 = new AuctionModel(2, Date.now(), Date.now() + 1000 * 60 * 5)
+  au4 = new AuctionModel(3, Date.now(), Date.now() + 1000 * 60 * 6)
+  au5 = new AuctionModel(4, Date.now(), Date.now() + 1000 * 60 * 7)
+
+  new AuctionModel.prototype.newBid(0, 500, "Fabi");
+  new AuctionModel.prototype.newBid(0, 400, "Fabi");
+  new AuctionModel.prototype.newBid(0, 300, "Fabi");
+  new AuctionModel.prototype.newBid(0, 200, "Fabi");
+  new AuctionModel.prototype.newBid(0, 100, "Fabi");
+  new AuctionModel.prototype.newBid(0, 550, "Simon");
+  new AuctionModel.prototype.newBid(0, 450, "Simon");
+  new AuctionModel.prototype.newBid(0, 350, "Simon");
+  new AuctionModel.prototype.newBid(0, 250, "Simon");
+  new AuctionModel.prototype.newBid(0, 150, "Simon");
+  new AuctionModel.prototype.newBid(0, 50, "Simon");
+  new AuctionModel.prototype.newBid(1, 70, "Fabi");
+  new AuctionModel.prototype.newBid(1, 60, "Simon");
+  new AuctionModel.prototype.newBid(1, 250, "Simon");
+  new AuctionModel.prototype.newBid(1, 200, "Simon");
+
 
 
 /*
@@ -208,7 +234,7 @@ amqp.connect('amqp://localhost').then(function(conn) {
 #############
 */
 
-
+  //requests from Queue
   process.once('SIGINT', function() {  });
   return conn.createChannel().then(function(ch) {
 
@@ -262,7 +288,6 @@ amqp.connect('amqp://localhost').then(function(conn) {
 }).then(null, console.warn);
 
 //call checkForEndedAuctions every 1/2 sec
-  setInterval(function() {
-    AuctionModel.prototype.checkForEndedAuctions();
-    console.log('check')
-  }, 500);
+setInterval(function() {
+  AuctionModel.prototype.checkForEndedAuctions();
+}, 500);

@@ -1,3 +1,9 @@
+/*
+ @Authors:
+ Simon Hintersonnleitner
+ Fabin Hoffmann
+*/
+
 var app = require('express')();
 var express = require('express');
 var http = require('http').Server(app);
@@ -7,14 +13,16 @@ var when = require('when');
 var io = require('socket.io')(http, {path: '/public/socket.io'})
 var sockets = {};
 
+//express
 app.use(express.static(__dirname + '/public'));
-
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/client.html');
 });
 
+//rabbit scope for requests
 amqp.connect('amqp://localhost').then(function(conn) {
 
+  //Socket connections
   io.on('connection', function(socket){
     //From client
     socket.on('request', function(msg){
@@ -27,7 +35,7 @@ amqp.connect('amqp://localhost').then(function(conn) {
         delete sockets[socket.username];
         socket.username = '';
       }
-      else{
+      else{ //forward requests to queue
         return when(conn.createChannel().then(function(ch) {
           var q = 'request';
           var ok = ch.assertQueue(q, {durable: false});
@@ -37,19 +45,20 @@ amqp.connect('amqp://localhost').then(function(conn) {
             console.log(" [x] Rabbit sent '%s'", msg);
             return ch.close();
           });
-        })).ensure(function() {  });;
+        })).ensure(function() {});;
       }
     });
   });
 }).then(null, console.warn);
 
+//rabbit scope for responses
 amqp.connect('amqp://localhost').then(function(conn) {
     //From Server
-    process.once('SIGINT', function() {  });
+    process.once('SIGINT', function() {});
     return conn.createChannel().then(function(ch) {
-      var ok2 = ch.assertQueue('response', {durable: false});
+      var ok = ch.assertQueue('response', {durable: false});
 
-      ok2 = ok2.then(function(_qok) {
+      ok = ok.then(function(_qok) {
         return ch.consume('response', function(msg) {
 
           console.log(" [x] Rabbit received '%s'", msg.content.toString());
@@ -60,7 +69,7 @@ amqp.connect('amqp://localhost').then(function(conn) {
         }, {noAck: true});
       });
 
-      return ok2.then(function(_consumeOk) {
+      return ok.then(function(_consumeOk) {
         console.log(' Rabbit waiting for messages. ');
       });
     });
