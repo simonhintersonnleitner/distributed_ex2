@@ -24,7 +24,6 @@ amqp.connect('amqp://localhost').then(function(conn) {
       if(!socket.username) {
 
         socket.username = msg.split(';')[1];
-        // console.log(msg.split(';')[1]);
         sockets[socket.username] = socket;
       }
       return when(conn.createChannel().then(function(ch) {

@@ -228,15 +228,19 @@ amqp.connect('amqp://localhost').then(function(conn) {
         if(res[0].toString() === 'login'){
           if(authenticate(res[2]['user'], res[2]['pw'])) {
             var user = UserModel.prototype.findUser(res[2]['user']);
-            send('login;' + res[2]['user'] + ';ok;' + null);
+            send('login;' + res[2]['user'] + ';ok;');
           }
           else{
-            send('login;denied');
+            send('login;' + res[2]['user'] + ';denied;');
           }
-        }
+        }//Register
+        else if(res[0].toString() === 'register') {
+          new UserModel(res[2]['user'], res[2]['pw']);
+          send('register;' + res[2]['user'] + ';ok;');
+        }//get Auctions
         else if(res[0].toString() === 'getAuctions') {
           var auctions = JSON.stringify(AuctionModel.prototype.getLiveAuctions());
-          send('auctions;' + auctions);
+          send('auctions;' + res[1] + ';' + auctions);
         }
       }, {noAck: true});
     });
