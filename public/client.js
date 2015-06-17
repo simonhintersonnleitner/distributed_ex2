@@ -1,5 +1,6 @@
 var socket = io.connect('http://localhost', {path: "/public/socket.io"});
 var loggedIn = false;
+var username = '';
 
 $(document).ready(function (){
 
@@ -9,6 +10,7 @@ $(document).ready(function (){
 
   $('#login').click(function(){
     console.log('login');
+    username = $('#user').val();
     login();
   });
 
@@ -19,8 +21,7 @@ $(document).ready(function (){
   });
 
   $('#register').click(function(){
-    register
-    socket.emit('register', $('#user').val(),$('#pw').val());
+    username = $('#user').val();
   });
 
   $('#logout').click(function(){
@@ -59,8 +60,8 @@ $(document).ready(function (){
           changeOutputText("Logout failed!","danger");
         }
       }else if(split_result[0] == 'auctions'){
-        printAuctions(JSON.parse(split_result[1]));
         console.log('auctions are commings!' + split_result[1]);
+        printAuctions(JSON.parse(split_result[1]));
       }else if(split_result[0] == 'register'){
         if(split_result[1] == 'ok'){
           console.log('Logout erfolgreich');
@@ -144,8 +145,10 @@ function activateButtons(){
   });
   $('.check').off();
   $('.check').click(function() {
-    var auctionId = $(this).data('id');
-    socket.emit('request','check_bid;id=' + auctionId);
+    var check = {
+    auctionId: $(this).data('id')
+    }
+    socket.emit('request','check_bid;'+username+';' + JSON.stringify(check));
   });
 }
 
@@ -167,15 +170,23 @@ function login() {
     user: $('#user').val(),
     pw: $('#pw').val()
   }
- socket.emit('request','login;' + JSON.stringify(user));
+ socket.emit('request','login;'+username+';' + JSON.stringify(user));
 }
 
 function logout(){
-  socket.emit('request','logout;');
+  socket.emit('request','logout;'+username+';');
 }
 
 function getRunningAuctions(){
-  socket.emit('request','getAuctions;');
+  socket.emit('request','getAuctions;'+username+';');
+}
+
+function register(){
+  var user = {
+    user: $('#user').val(),
+    pw: $('#pw').val()
+  }
+  socket.emit('request','register;'+username+';'+ JSON.stringify(user));
 }
 
 function hideForLogOut(){
@@ -194,7 +205,7 @@ function bid(that){
     product: $(that).data('id'),
     value: $('#value_' + auctionId).val()
   }
-  socket.emit('request','bid;' + JSON.stringify(newBid));
+  socket.emit('request','bid;'+username+';'+ JSON.stringify(newBid));
 
   console.log("bid:" + auctionId + " " + value);
   $('.bid_value').val("");
