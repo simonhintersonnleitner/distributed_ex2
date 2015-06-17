@@ -52,13 +52,6 @@ $(document).ready(function (){
         }else{
           changeOutputText("Login not successfull!","danger");
         }
-      }else if(split_result[0] == 'logout'){
-        if(split_result[2] == 'ok'){
-          changeOutputText("You have been logged out!","warning");
-          hideForLogOut();
-        }else{
-          changeOutputText("Logout failed!","danger");
-        }
       }else if(split_result[0] == 'auctions'){
         console.log('auctions are commings!' + split_result[2]);
         printAuctions(JSON.parse(split_result[2]));
@@ -172,6 +165,9 @@ function login() {
 
 function logout(){
   socket.emit('request','logout;'+username+';');
+  hideForLogOut();
+  loggedIn = false;
+  changeOutputText("Logout successfull!","warning");
 }
 
 function getRunningAuctions(){
