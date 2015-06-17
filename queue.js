@@ -13,8 +13,6 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/client.html');
 });
 
-
-
 amqp.connect('amqp://localhost').then(function(conn) {
 
   io.on('connection', function(socket){
@@ -57,9 +55,7 @@ amqp.connect('amqp://localhost').then(function(conn) {
           console.log(" [x] Rabbit received '%s'", msg.content.toString());
 
           var username = split(msg)[1];
-          var socket = sockets[username];
-
-          send(msg, socket);
+          send(msg, username);
 
         }, {noAck: true});
       });
@@ -70,15 +66,23 @@ amqp.connect('amqp://localhost').then(function(conn) {
     });
 }).then(null, console.warn);
 
-function send(msg, socket){
-  socket.emit('response', msg.content.toString());
+function send(msg, username){
+  if (username === 'broadcast' ) {
+    for ( var socketKey in sockets) {
+      sockets[socketKey].emit('response', msg.content.toString());
+    }
+  }
+  else {
+    var socket = sockets[username];
+    if (socket)
+      socket.emit('response', msg.content.toString());
+  }
 }
 
 function split(msg){
   var res = msg.content.toString();
   return res.split(';');
 }
-
 
 http.listen(3000, function(){
   console.log('listening on *:3000');

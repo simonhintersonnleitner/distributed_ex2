@@ -62,17 +62,18 @@ $(document).ready(function (){
         }else{
           changeOutputText("Registration failed!",'danger');
         }
-      }else if(split_result[0] == 'auction_ended'){
+      }else if(split_result[0] == 'endAuction'){
+        var auctionId = split_result[2];
         console.log("auction_ended id:" + auctionId);
         $('#time_' + auctionId).remove();
         $('#bidform_' + auctionId).remove();
         $('#check_' + auctionId).remove();
         $('#row_' + auctionId).find('td').eq(3).empty();
         $('#row_' + auctionId).find('td').eq(3).append("Time is over!");
-      }else if(split_result[0] == 'win_result'){
+      }else if(split_result[0] == 'winAuction'){
         if(loggedIn)
-          $('#row_' + res).find('td').eq(4).append("You have won this auction!");
-      }else if(split_result[0] == 'new_auction'){
+          $('#row_' + split_result[2]).find('td').eq(4).append("You have won this auction!");
+      }else if(split_result[0] == 'newAuction'){
         addNewAuction(JSON.parse(split_result[2]));
       }else if(split_result[0] == 'newBid'){
         $('#output').empty();
