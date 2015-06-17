@@ -240,11 +240,11 @@ amqp.connect('amqp://localhost').then(function(conn) {
         }//new Bid
         else if(res[0].toString() === 'newBid') {
           var result = AuctionModel.prototype.newBid(res[2]['auctionId'], res[2]['value'], res[1]);
-          send('newBid;' + res[2]['user'] + ';' + result + ';');
-        //check Bid
+          send('newBid;' + res[1] + ';' + result + ';');
+        }//check Bid
         else if(res[0].toString() === 'checkBid') {
           var result = AuctionModel.prototype.checkBid(res[1], res[2]['auctionId']);
-          send('checkBid;' + res[2]['user'] + ';' + result + ';');
+          send('checkBid;' + res[1] + ';' + result + ';');
         }//get Auctions
         else if(res[0].toString() === 'getAuctions') {
           var auctions = JSON.stringify(AuctionModel.prototype.getLiveAuctions());

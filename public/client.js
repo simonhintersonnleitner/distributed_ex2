@@ -199,7 +199,7 @@ function bid(that){
     auctionId: auctionId,
     value: $('#value_' + auctionId).val()
   }
-  socket.emit('request','newbid;'+username+';'+ JSON.stringify(newBid));
+  socket.emit('request','newBid;'+username+';'+ JSON.stringify(newBid));
 
   //console.log("bid:" + auctionId + " " + value);
   $('.bid_value').val("");
