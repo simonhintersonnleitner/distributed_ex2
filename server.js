@@ -221,21 +221,22 @@ amqp.connect('amqp://localhost').then(function(conn) {
 
         res = res.split(';');
 
-        if(res[1])
-          res[1] = JSON.parse(res[1]);
+        if(res[2])
+          res[2] = JSON.parse(res[2]);
 
         //login
         if(res[0].toString() === 'login'){
-          if(authenticate(res[1]['user'], res[1]['pw'])) {
-            var user = UserModel.prototype.findUser(res[1]['user']);
-            send('login;ok;' + res[1]['user'], null);
+          if(authenticate(res[2]['user'], res[2]['pw'])) {
+            var user = UserModel.prototype.findUser(res[2]['user']);
+            send('login;' + res[2]['user'] + ';ok;' + null);
           }
           else{
-            send('login;denied', null);
+            send('login;denied');
           }
         }
         else if(res[0].toString() === 'getAuctions') {
-
+          var auctions = JSON.stringify(AuctionModel.prototype.getLiveAuctions());
+          send('auctions;' + auctions);
         }
       }, {noAck: true});
     });
@@ -245,7 +246,7 @@ amqp.connect('amqp://localhost').then(function(conn) {
     });
   });
 
-  function send(msg, res){
+  function send(msg){
     return when(conn.createChannel().then(function(ch) {
         var q = 'response';
         var ok = ch.assertQueue(q, {durable: false});
