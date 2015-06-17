@@ -20,22 +20,27 @@ amqp.connect('amqp://localhost').then(function(conn) {
   io.on('connection', function(socket){
     //From client
     socket.on('request', function(msg){
-
+      var res = msg.split(';');
       if(!socket.username) {
-
-        socket.username = msg.split(';')[1];
+        socket.username = res[1];
         sockets[socket.username] = socket;
       }
-      return when(conn.createChannel().then(function(ch) {
-        var q = 'request';
-        var ok = ch.assertQueue(q, {durable: false});
+      if(res[0] === 'logout'){
+        delete sockets[socket.username];
+        socket.username = '';
+      }
+      else{
+        return when(conn.createChannel().then(function(ch) {
+          var q = 'request';
+          var ok = ch.assertQueue(q, {durable: false});
 
-        return ok.then(function(_qok) {
-          ch.sendToQueue(q, new Buffer(msg));
-          console.log(" [x] Rabbit sent '%s'", msg);
-          return ch.close();
-        });
-      })).ensure(function() {  });;
+          return ok.then(function(_qok) {
+            ch.sendToQueue(q, new Buffer(msg));
+            console.log(" [x] Rabbit sent '%s'", msg);
+            return ch.close();
+          });
+        })).ensure(function() {  });;
+      }
     });
   });
 }).then(null, console.warn);

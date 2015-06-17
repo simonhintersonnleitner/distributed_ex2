@@ -191,8 +191,8 @@ u2 = new UserModel("Simon", "abc")
 a1 = new ArticleModel("Teller", "Schöner Teller", 5)
 a2 = new ArticleModel("Oreo", "Lecker Keks", 0.4)
 a3 = new ArticleModel("Bier", "hmm", 15)
-au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 30 )
-au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 25 )
+au1 = new AuctionModel(0, Date.now(), Date.now() + 1000 * 40 )
+au2 = new AuctionModel(1, Date.now(), Date.now() + 1000 * 45 )
 au3 = new AuctionModel(2, Date.now() - 1000 * 60 * 50, Date.now() - 1000 * 60 * 1)
 new AuctionModel.prototype.newBid(0, 5, "Fabi");
 new AuctionModel.prototype.newBid(0, 6, "Simon");
@@ -235,6 +235,10 @@ amqp.connect('amqp://localhost').then(function(conn) {
           }
         }//Register
         else if(res[0].toString() === 'register') {
+          new UserModel(res[2]['user'], res[2]['pw']);
+          send('register;' + res[2]['user'] + ';ok;');
+        }//Bid
+        else if(res[0].toString() === 'logout') {
           new UserModel(res[2]['user'], res[2]['pw']);
           send('register;' + res[2]['user'] + ';ok;');
         }//get Auctions
