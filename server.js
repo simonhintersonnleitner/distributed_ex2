@@ -237,10 +237,14 @@ amqp.connect('amqp://localhost').then(function(conn) {
         else if(res[0].toString() === 'register') {
           new UserModel(res[2]['user'], res[2]['pw']);
           send('register;' + res[2]['user'] + ';ok;');
-        }//Bid
-        else if(res[0].toString() === 'logout') {
-          new UserModel(res[2]['user'], res[2]['pw']);
-          send('register;' + res[2]['user'] + ';ok;');
+        }//new Bid
+        else if(res[0].toString() === 'newBid') {
+          var result = AuctionModel.prototype.newBid(res[2]['auctionId'], res[2]['value'], res[1]);
+          send('newBid;' + res[2]['user'] + ';' + result + ';');
+        //check Bid
+        else if(res[0].toString() === 'checkBid') {
+          var result = AuctionModel.prototype.checkBid(res[1], res[2]['auctionId']);
+          send('checkBid;' + res[2]['user'] + ';' + result + ';');
         }//get Auctions
         else if(res[0].toString() === 'getAuctions') {
           var auctions = JSON.stringify(AuctionModel.prototype.getLiveAuctions());
