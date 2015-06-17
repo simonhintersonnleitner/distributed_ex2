@@ -53,7 +53,7 @@ $(document).ready(function (){
           changeOutputText("Login not successfull!","danger");
         }
       }else if(split_result[0] == 'logout'){
-        if(split_result[1] == 'ok'){
+        if(split_result[2] == 'ok'){
           changeOutputText("You have been logged out!","warning");
           hideForLogOut();
         }else{
@@ -63,7 +63,7 @@ $(document).ready(function (){
         console.log('auctions are commings!' + split_result[1]);
         printAuctions(JSON.parse(split_result[1]));
       }else if(split_result[0] == 'register'){
-        if(split_result[1] == 'ok'){
+        if(split_result[2] == 'ok'){
           console.log('Logout erfolgreich');
           loggedIn = true;
           changeOutputText("Registration success",'success');
