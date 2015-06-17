@@ -194,14 +194,14 @@ function hideForLogOut(){
 
 function bid(that){
   console.log('bid!');
-
+  var auctionId = $(that).data('id');
   var newBid = {
-    auctionId: $(that).data('id'),
+    auctionId: auctionId,
     value: $('#value_' + auctionId).val()
   }
   socket.emit('request','newbid;'+username+';'+ JSON.stringify(newBid));
 
-  console.log("bid:" + auctionId + " " + value);
+  //console.log("bid:" + auctionId + " " + value);
   $('.bid_value').val("");
 }
 
