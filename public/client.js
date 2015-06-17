@@ -196,7 +196,7 @@ function bid(that){
   console.log('bid!');
 
   var newBid = {
-    product: $(that).data('id'),
+    auctionId: $(that).data('id'),
     value: $('#value_' + auctionId).val()
   }
   socket.emit('request','bid;'+username+';'+ JSON.stringify(newBid));
