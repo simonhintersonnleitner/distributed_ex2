@@ -1,5 +1,6 @@
 var socket = io.connect('http://localhost', {path: "/public/socket.io"});
 var loggedIn = false;
+var username = '';
 
 $(document).ready(function (){
 
@@ -9,6 +10,7 @@ $(document).ready(function (){
 
   $('#login').click(function(){
     console.log('login');
+    username = $('#user').val();
     login();
   });
 
@@ -19,8 +21,7 @@ $(document).ready(function (){
   });
 
   $('#register').click(function(){
-    register
-    socket.emit('register', $('#user').val(),$('#pw').val());
+    username = $('#user').val();
   });
 
   $('#logout').click(function(){
@@ -39,7 +40,7 @@ $(document).ready(function (){
 
     if(split_result[0]){
       if(split_result[0] == 'login'){
-        if(split_result[1] == 'ok'){
+        if(split_result[2] == 'ok'){
           loggedIn = true;
           $('#login').hide();
           $('#register').hide();
@@ -52,17 +53,17 @@ $(document).ready(function (){
           changeOutputText("Login not successfull!","danger");
         }
       }else if(split_result[0] == 'logout'){
-        if(split_result[1] == 'ok'){
+        if(split_result[2] == 'ok'){
           changeOutputText("You have been logged out!","warning");
           hideForLogOut();
         }else{
           changeOutputText("Logout failed!","danger");
         }
       }else if(split_result[0] == 'auctions'){
-        printAuctions(JSON.parse(split_result[1]));
-        console.log('auctions are commings!' + split_result[1]);
+        console.log('auctions are commings!' + split_result[2]);
+        printAuctions(JSON.parse(split_result[2]));
       }else if(split_result[0] == 'register'){
-        if(split_result[1] == 'ok'){
+        if(split_result[2] == 'ok'){
           console.log('Logout erfolgreich');
           loggedIn = true;
           changeOutputText("Registration success",'success');
@@ -80,7 +81,7 @@ $(document).ready(function (){
         if(loggedIn)
           $('#row_' + res).find('td').eq(4).append("You have won this auction!");
       }else if(split_result[0] == 'new_auction'){
-        addNewAuction(JSON.parse(split_result[1]));
+        addNewAuction(JSON.parse(split_result[2]));
       }else if(split_result[0] == 'new_bid_result'){
         $('#output').empty();
         if(res == -1) {
@@ -144,8 +145,10 @@ function activateButtons(){
   });
   $('.check').off();
   $('.check').click(function() {
-    var auctionId = $(this).data('id');
-    socket.emit('request','check_bid;id=' + auctionId);
+    var check = {
+    auctionId: $(this).data('id')
+    }
+    socket.emit('request','check_bid;'+username+';' + JSON.stringify(check));
   });
 }
 
@@ -167,15 +170,23 @@ function login() {
     user: $('#user').val(),
     pw: $('#pw').val()
   }
- socket.emit('request','login;' + JSON.stringify(user));
+ socket.emit('request','login;'+username+';' + JSON.stringify(user));
 }
 
 function logout(){
-  socket.emit('request','logout;');
+  socket.emit('request','logout;'+username+';');
 }
 
 function getRunningAuctions(){
-  socket.emit('request','getAuctions;');
+  socket.emit('request','getAuctions;'+username+';');
+}
+
+function register(){
+  var user = {
+    user: $('#user').val(),
+    pw: $('#pw').val()
+  }
+  socket.emit('request','register;'+username+';'+ JSON.stringify(user));
 }
 
 function hideForLogOut(){
@@ -194,7 +205,7 @@ function bid(that){
     product: $(that).data('id'),
     value: $('#value_' + auctionId).val()
   }
-  socket.emit('request','bid;' + JSON.stringify(newBid));
+  socket.emit('request','bid;'+username+';'+ JSON.stringify(newBid));
 
   console.log("bid:" + auctionId + " " + value);
   $('.bid_value').val("");
