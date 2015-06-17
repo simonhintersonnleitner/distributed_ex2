@@ -220,7 +220,9 @@ amqp.connect('amqp://localhost').then(function(conn) {
         var res = msg.content.toString();
 
         res = res.split(';');
-        res[1] = JSON.parse(res[1]);
+
+        if(res[1])
+          res[1] = JSON.parse(res[1]);
 
         //login
         if(res[0].toString() === 'login'){
@@ -231,6 +233,9 @@ amqp.connect('amqp://localhost').then(function(conn) {
           else{
             send('login;denied', null);
           }
+        }
+        else if(res[0].toString() === 'getAuctions') {
+
         }
       }, {noAck: true});
     });

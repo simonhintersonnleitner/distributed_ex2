@@ -15,7 +15,26 @@ app.get('/', function(req, res){
 amqp.connect('amqp://localhost').then(function(conn) {
 
   io.on('connection', function(socket){
-    socket.username = '';
+    //From Server
+    process.once('SIGINT', function() {  });
+    return conn.createChannel().then(function(ch) {
+      var ok2 = ch.assertQueue('response', {durable: false});
+
+      ok2 = ok2.then(function(_qok) {
+        return ch.consume('response', function(msg) {
+
+          console.log(" [x] Rabbit received '%s'", msg.content.toString());
+
+          var res = msg.content.toString();
+          res = res.split(';');
+
+          socket.emit('response', msg.content.toString());
+
+          if (res[0] === 'login' && res[1] === 'ok' && res[2]){
+            socket.username = res[2];
+          }
+        }, {noAck: true});
+      });
 
     //From client
     socket.on('request', function(msg){
@@ -31,27 +50,7 @@ amqp.connect('amqp://localhost').then(function(conn) {
       })).ensure(function() {  });;
     });
 
-    //From Server
-    process.once('SIGINT', function() {  });
-    return conn.createChannel().then(function(ch) {
-      console.log('haha')
-      var ok2 = ch.assertQueue('response', {durable: false});
 
-      ok2 = ok2.then(function(_qok) {
-        return ch.consume('response', function(msg) {
-
-          console.log(" [x] Rabbit received '%s'", msg.content.toString());
-
-          var res = msg.content.toString();
-          res = res.split(';');
-
-          socket.emit('response', msg.content.toString());
-
-          if (res[0] === 'login' && res[1] === 'ok'){
-            socket.username = res[2];
-          }
-        }, {noAck: true});
-      });
 
       return ok2.then(function(_consumeOk) {
         console.log(' Rabbit waiting for messages. ');
