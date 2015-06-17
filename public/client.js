@@ -35,7 +35,6 @@ $(document).ready(function (){
   });
 
   socket.on('response',function(res){
-    l
     var split_result = res.split(';');
 
     if(split_result[0]){
@@ -99,20 +98,16 @@ $(document).ready(function (){
       }else if(split_result[0] == 'check_bid_result'){
         $('#output').empty();
         if(res == -1) {
-          $('#output').append("Fehler es wurde keine Gebot abgegeben!");
-          console.log("Fehler es wurde keine Gebot abgegeben!");
+          changeOutputText("You have not set an bid!",'danger');
         }
         else if(res == 1) {
-          $('#output').append("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
-          console.log("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
+          changeOutputText("Congratulation you have actually the lowest single-bid!",'success');
         }
         else if(res == -2) {
-          $('#output').append("<insert text here>");
-          console.log("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
+          changeOutputText("<insert text here>");
         }
         else {
-          $('#output').append("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
-          console.log("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
+          changeOutputText("Sorry at that moment you dont have the lowest single-bid!",'warning');
         }
       }
     }
@@ -196,8 +191,8 @@ function bid(that){
   console.log('bid!');
 
   var newBid = {
-    product: $(that).data('id');
-    value: $('#value_' + auctionId).val();
+    product: $(that).data('id'),
+    value: $('#value_' + auctionId).val()
   }
   socket.emit('request','bid;' + JSON.stringify(newBid));
 
