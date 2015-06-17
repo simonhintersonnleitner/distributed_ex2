@@ -1,3 +1,8 @@
+/* 
+  @Authors:
+  Simon Hintersonnleitner
+  Fabin Hoffmann
+*/
 var socket = io.connect('http://localhost', {path: "/public/socket.io"});
 var loggedIn = false;
 var username = '';
@@ -9,7 +14,6 @@ $(document).ready(function (){
 
 
   $('#login').click(function(){
-    console.log('login');
     login();
   });
 
@@ -53,7 +57,6 @@ $(document).ready(function (){
           changeOutputText("Login not successfull!","danger");
         }
       }else if(split_result[0] == 'auctions'){
-        console.log('auctions are commings!' + split_result[2]);
         printAuctions(JSON.parse(split_result[2]));
       }else if(split_result[0] == 'register'){
         if(split_result[2] == 'ok'){
@@ -194,15 +197,12 @@ function hideForLogOut(){
 }
 
 function bid(that){
-  console.log('bid!');
   var auctionId = $(that).data('id');
   var newBid = {
     auctionId: auctionId,
     value: $('#value_' + auctionId).val()
   }
   socket.emit('request','newBid;'+username+';'+ JSON.stringify(newBid));
-
-  //console.log("bid:" + auctionId + " " + value);
   $('.bid_value').val("");
 }
 
@@ -226,6 +226,7 @@ function updateTime(auctionId){
 
 }
 function changeOutputText(msg,mode){
+  console.log(msg);
   $('#output').empty();
   $('#output').append(msg);
   $('#output').removeClass('alert-danger');
