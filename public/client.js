@@ -40,7 +40,7 @@ $(document).ready(function (){
 
     if(split_result[0]){
       if(split_result[0] == 'login'){
-        if(split_result[1] == 'ok'){
+        if(split_result[2] == 'ok'){
           loggedIn = true;
           $('#login').hide();
           $('#register').hide();
@@ -60,8 +60,8 @@ $(document).ready(function (){
           changeOutputText("Logout failed!","danger");
         }
       }else if(split_result[0] == 'auctions'){
-        console.log('auctions are commings!' + split_result[1]);
-        printAuctions(JSON.parse(split_result[1]));
+        console.log('auctions are commings!' + split_result[2]);
+        printAuctions(JSON.parse(split_result[2]));
       }else if(split_result[0] == 'register'){
         if(split_result[2] == 'ok'){
           console.log('Logout erfolgreich');
@@ -81,7 +81,7 @@ $(document).ready(function (){
         if(loggedIn)
           $('#row_' + res).find('td').eq(4).append("You have won this auction!");
       }else if(split_result[0] == 'new_auction'){
-        addNewAuction(JSON.parse(split_result[1]));
+        addNewAuction(JSON.parse(split_result[2]));
       }else if(split_result[0] == 'new_bid_result'){
         $('#output').empty();
         if(res == -1) {
