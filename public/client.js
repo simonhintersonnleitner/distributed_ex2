@@ -32,7 +32,7 @@ $(document).ready(function (){
 
   socket.on('response',function(res){
 
-    var splice_result = res.splice(';')
+    var splice_result = res.splice(';');
 
     if(splice_result[0]){
       if(splice_result[0] == 'login'){
@@ -47,7 +47,7 @@ $(document).ready(function (){
           changeOutputText("Login successfull!","success");
           getRunningAuctions();
         }else{
-          console.log('Login NICHT erfolgreich!')
+          console.log('Login NICHT erfolgreich!');
         }
       }else if(splice_result[0] == 'logout'){
         if(splice_result[1] == 'ok'){
@@ -60,9 +60,9 @@ $(document).ready(function (){
         }
       }else if(splice_result[0] == 'auctions'){
         printAuctions(JSON.parse(splice_result[1]));
-        console.log('auctions are commings!' + splice_result[1])
+        console.log('auctions are commings!' + splice_result[1]);
       }else if(splice_result[0] == 'report'){
-        console.log('reports are comming!' + splice_result[1])
+        console.log('reports are comming!' + splice_result[1]);
       }
     }
 
@@ -73,13 +73,13 @@ socket.on('login_result', function(res){
 
 
   socket.on('list_auctions_result', function(res){
-        
+
         $('#header').show();
 
-        if(res.length == 0){
+        if(res.length === 0){
           $('#articleList').find('#output').remove();
           $('#articleList').append('<tr id=output>');
-          $('#articleList').find('#output').append('<td>no runnig auction found!</td><td></td><td></td><td></td><td></td><td></td>')
+          $('#articleList').find('#output').append('<td>no runnig auction found!</td><td></td><td></td><td></td><td></td><td></td>');
         }else{
           res.forEach(function(auction){
           addNewAuction(auction);
@@ -104,19 +104,19 @@ socket.on('login_result', function(res){
           $('#bidform_' + auctionId).remove();
           $('#check_' + auctionId).remove();
           $('#row_' + auctionId).find('td').eq(3).empty();
-          $('#row_' + auctionId).find('td').eq(3).append("Time is over!")
+          $('#row_' + auctionId).find('td').eq(3).append("Time is over!");
         }
       });
 
       socket.on('win_result', function(res){
         if(loggedIn)
-          $('#row_' + res).find('td').eq(4).append("You have won this auction!")
+          $('#row_' + res).find('td').eq(4).append("You have won this auction!");
       });
 
       socket.on('new_auction', function(auction){
         if(loggedIn)
           addNewAuction(auction);
-    });
+      });
   });
 
   socket.on('new_bid_result', function(res){
@@ -160,7 +160,7 @@ socket.on('login_result', function(res){
   socket.emit('register', $('#user').val(),$('#pw').val());
   });
 
-  
+
 
 });
 
@@ -175,7 +175,7 @@ function addNewAuction(auction) {
   $('#articleList').find("#row_"+auction._id).append("<td><div class='time' id='time_"+auction._id+"' data-end="+auction._endsAt+">" + getRemaing(auction._endsAt)+"</div></td>");
   $('#articleList').find("#row_"+auction._id).append("<td><div class='form-inline' id='bidform_"+auction._id+"'><input type='text'  id='value_"+auction._id+"' data-id="+auction._id+" class='form-control bid_value'><button class='btn btn-default bid' data-id="+auction._id+">Bid</button></div></td>");
   $('#articleList').find("#row_"+auction._id).append("<td><button class='btn btn-default check' id='check_"+auction._id+"' data-id="+auction._id+">Check</button></td>");
-  $('#articleList').append("</tr>");    
+  $('#articleList').append("</tr>");
   setInterval(function() {updateTime(auction._id);}, 1000);
   activateButtons();
 }
@@ -194,9 +194,9 @@ function activateButtons(){
   $('.check').off();
   $('.check').click(function() {
     var auctionId = $(this).data('id');
-    socket.emit('request','check_bid;id=' + auctionId)
+    socket.emit('request','check_bid;id=' + auctionId);
   });
-} 
+}
 
 function printAuctions(auctions){
   for(var i; i < auctions.length; i++){
@@ -244,8 +244,8 @@ function getRemaing(dateString){
   var days = diff.getUTCDate()-1;
   var seconds = diff.getUTCSeconds();
   var houres = diff.getUTCHours();
-  var minutes = diff.getUTCMinutes()
-  
+  var minutes = diff.getUTCMinutes();
+
   return(days  +"d - "+ ('0' + houres).slice(-2) + ":"+ ('0' + minutes).slice(-2) + ":" + ('0' + seconds).slice(-2));
 }
 
@@ -264,3 +264,4 @@ function changeOutputText(msg,mode){
   $('#output').addClass('alert-' + mode);
 }
 
+});
