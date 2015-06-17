@@ -10,7 +10,6 @@ $(document).ready(function (){
 
   $('#login').click(function(){
     console.log('login');
-    username = $('#user').val();
     login();
   });
 
@@ -22,6 +21,7 @@ $(document).ready(function (){
 
   $('#register').click(function(){
     username = $('#user').val();
+    register();
   });
 
   $('#logout').click(function(){
@@ -64,8 +64,7 @@ $(document).ready(function (){
         printAuctions(JSON.parse(split_result[2]));
       }else if(split_result[0] == 'register'){
         if(split_result[2] == 'ok'){
-          console.log('Logout erfolgreich');
-          loggedIn = true;
+          login();
           changeOutputText("Registration success",'success');
         }else{
           changeOutputText("Registration failed!",'danger');
@@ -146,7 +145,7 @@ function activateButtons(){
   $('.check').off();
   $('.check').click(function() {
     var check = {
-    auctionId: $(this).data('id')
+      auctionId: $(this).data('id')
     }
     socket.emit('request','check_bid;'+username+';' + JSON.stringify(check));
   });
@@ -166,11 +165,12 @@ function printAuctions(auctions){
 }
 
 function login() {
+  username = $('#user').val();
   var user = {
     user: $('#user').val(),
     pw: $('#pw').val()
   }
- socket.emit('request','login;'+username+';' + JSON.stringify(user));
+  socket.emit('request','login;'+username+';' + JSON.stringify(user));
 }
 
 function logout(){
@@ -182,6 +182,7 @@ function getRunningAuctions(){
 }
 
 function register(){
+  username = $('#user').val();
   var user = {
     user: $('#user').val(),
     pw: $('#pw').val()
