@@ -14,8 +14,10 @@ app.get('/', function(req, res){
 
 amqp.connect('amqp://localhost').then(function(conn) {
 
-  //From client
   io.on('connection', function(socket){
+    socket.username = '';
+
+    //From client
     socket.on('request', function(msg){
       return when(conn.createChannel().then(function(ch) {
         var q = 'request';
@@ -26,30 +28,38 @@ amqp.connect('amqp://localhost').then(function(conn) {
           console.log(" [x] Rabbit sent '%s'", msg);
           return ch.close();
         });
-      })).ensure(function() { conn.close(); });;
+      })).ensure(function() {  });;
     });
 
     //From Server
-    process.once('SIGINT', function() { conn.close(); });
+    process.once('SIGINT', function() {  });
     return conn.createChannel().then(function(ch) {
+      console.log('haha')
+      var ok2 = ch.assertQueue('response', {durable: false});
 
-      var ok = ch.assertQueue('response', {durable: false});
-
-      ok = ok.then(function(_qok) {
+      ok2 = ok2.then(function(_qok) {
         return ch.consume('response', function(msg) {
+
           console.log(" [x] Rabbit received '%s'", msg.content.toString());
-          socket.emit('response', msg);
+
+          var res = msg.content.toString();
+          res = res.split(';');
+
+          socket.emit('response', msg.content.toString());
+
+          if (res[0] === 'login' && res[1] === 'ok'){
+            socket.username = res[2];
+          }
         }, {noAck: true});
       });
 
-      return ok.then(function(_consumeOk) {
+      return ok2.then(function(_consumeOk) {
         console.log(' Rabbit waiting for messages. ');
       });
     });
   });
 
 }).then(null, console.warn);
-
 
 http.listen(3000, function(){
   console.log('listening on *:3000');

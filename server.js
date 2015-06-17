@@ -2,57 +2,6 @@ var _ = require('underscore');
 var amqp = require('amqplib');
 var when = require('when');
 
-//Login
-//   socket.on('login', function(username,pw){
-//    if(authenticate(username, pw)) {
-//       socket.username = username;
-//       var user = UserModel.prototype.findUser(username);
-//       user.socket = socket.id;
-//       io.emit('login_result', 1);
-//     }
-//     else
-//       io.emit('login_result', 0);
-//   });
-
-amqp.connect('amqp://localhost').then(function(conn) {
-  process.once('SIGINT', function() { conn.close(); });
-  return conn.createChannel().then(function(ch) {
-
-    var ok = ch.assertQueue('request', {durable: false});
-
-    ok = ok.then(function(_qok) {
-      return ch.consume('request', function(msg) {
-        console.log(" [x] Server received '%s'", msg.content.toString());
-        var res = msg.content.splice(';');
-        res[1] = JSON.parse(res[1]);
-
-        if(res[0].toString() === 'login'){
-          console.log('SWAG');
-          console.log(res[1]);
-        }
-      }, {noAck: true});
-    });
-
-    return ok.then(function(_consumeOk) {
-      console.log(' Server waiting for messages. ');
-    });
-  });
-
-  function send(msg, res){
-    console.log('Yolo');
-    return when(conn.createChannel().then(function(ch) {
-        var q = 'response';
-        var ok = ch.assertQueue(q, {durable: false});
-
-        return ok.then(function(_qok) {
-          ch.sendToQueue(q, new Buffer('msg'));
-          console.log(" [x] Server sent '%s'", msg);
-          return ch.close();
-        });
-      })).ensure(function() { });;
-      //conn.close();
-  };
-
 var userList = [];
 var articleList = [];
 var auctionList = [];
@@ -177,7 +126,8 @@ AuctionModel.prototype = {
   getWinningBid: function(auction) {
     var sortedBids = _.sortBy(auction._bids, function(b){
         return b._value;
-      });
+    });
+
     var winningBid = false;
 
     for (var i = 0; i < sortedBids.length; i++) {
@@ -188,7 +138,6 @@ AuctionModel.prototype = {
       if ( amount === 1 ) {
         winningBid = sortedBids[i];
         break;
-
       }
     }
     return winningBid;
@@ -213,10 +162,7 @@ AuctionModel.prototype = {
       var now = Date.now();
 
       if(now >= ends && !auctionList[i]._ended) {
-        console.log('Time up!');
-        console.log(auctionList[i]._id);
         auctionList[i].endAuction();
-        // console.log(auctionList[i]);
       }
     }
   }
@@ -234,56 +180,12 @@ function authenticate(username, pw) {
   return true;
 }
 
+/*
+#############
+####SEEDS####
+#############
+*/
 
-
-// io.on('connection', function(socket){
-//   //Register
-//   socket.on('request', msg){
-
-//   }
-//   socket.on('register', function(user,pw){
-//     io.emit('register_result', 1);
-//     var user = new UserModel(user, pw);
-//     socket.username = user._userName;
-//     user.socket = socket.id;
-
-//   });
-
-//   /
-
-//   //Logout
-//   socket.on('logout', function(){
-//       var user = UserModel.prototype.findUser(socket.username);
-//       socket.username = '';
-//       user.logout();
-//       io.emit('logout_result');
-//     });
-
-//   //Delete Account
-//   socket.on('delete', function(){
-//     var user = UserModel.prototype.findUser(socket.username);
-//     socket.username = '';
-//     user.delete();
-//   });
-
-//   //List Articles
-//   socket.on('list_auctions', function(){
-//     io.emit('list_auctions_result', AuctionModel.prototype.getLiveAuctions());
-//   });
-
-//   //New bid
-//   socket.on('new_bid', function(auctionId, value) {
-//     io.emit('new_bid_result', AuctionModel.prototype.newBid(auctionId, value, socket.username));
-//   });
-
-//   //check bid
-//   socket.on('check_bid', function(auctionId) {
-//     io.emit('check_bid_result', AuctionModel.prototype.checkBid(socket.username, auctionId));
-//   });
-// });
-
-
-//seeds
 u1 = new UserModel("Fabi", "abc")
 u2 = new UserModel("Simon", "abc")
 a1 = new ArticleModel("Teller", "Schöner Teller", 5)
@@ -296,6 +198,62 @@ new AuctionModel.prototype.newBid(0, 5, "Fabi");
 new AuctionModel.prototype.newBid(0, 6, "Simon");
 new AuctionModel.prototype.newBid(1, 7, "Fabi");
 new AuctionModel.prototype.newBid(1, 6, "Simon");
+
+
+/*
+#############
+##RABBITMQ###
+##Interface##
+#############
+*/
+
+amqp.connect('amqp://localhost').then(function(conn) {
+  process.once('SIGINT', function() {  });
+  return conn.createChannel().then(function(ch) {
+
+    var ok = ch.assertQueue('request', {durable: false});
+
+    ok = ok.then(function(_qok) {
+      return ch.consume('request', function(msg) {
+
+        console.log(" [x] Server received '%s'", msg.content.toString());
+        var res = msg.content.toString();
+
+        res = res.split(';');
+        res[1] = JSON.parse(res[1]);
+
+        //login
+        if(res[0].toString() === 'login'){
+          if(authenticate(res[1]['user'], res[1]['pw'])) {
+            var user = UserModel.prototype.findUser(res[1]['user']);
+            send('login;ok;' + res[1]['user'], null);
+          }
+          else{
+            send('login;denied', null);
+          }
+        }
+      }, {noAck: true});
+    });
+
+    return ok.then(function(_consumeOk) {
+      console.log(' Server waiting for messages. ');
+    });
+  });
+
+  function send(msg, res){
+    return when(conn.createChannel().then(function(ch) {
+        var q = 'response';
+        var ok = ch.assertQueue(q, {durable: false});
+
+        return ok.then(function(_qok) {
+          ch.sendToQueue(q, new Buffer(msg));
+          console.log(" [x] Server sent '%s'", msg);
+          return ch.close();
+        });
+      })).ensure(function() { });;
+      //conn.close();
+  };
+
 
 //call checkForEndedAuctions every 1/2 sec
 setInterval(function() {
