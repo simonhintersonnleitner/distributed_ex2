@@ -1,70 +1,76 @@
 var socket = io.connect('http://localhost', {path: "/public/socket.io"});
 var loggedIn = false;
+
 $(document).ready(function (){
 
   $('#logout').hide();
-  $('#delete').hide();
   $('#header').hide();
+
+
+  $('#login').click(function(){
+    console.log('login');
+    login();
+  });
+
+  $('#pw').keydown(function(e) {
+    if (e.keyCode == 13) {
+      login();
+    }
+  });
+
 
   $('#logout').click(function(){
     console.log('logout');
-    socket.emit('logout');
+    logout();
   });
 
   socket.on('disconnect', function(res){
     loggedIn = false;
     changeOutputText("Conncection lost!","danger");
-    logout();
+    hideForLogOut();
   });
 
-  socket.on('logout_result', function(res){
-    loggedIn = false;
-    changeOutputText("You have been loged out!","warning");
-    logout();
-  });
+  socket.on('response',function(res){
 
-  $('#delete').click(function(){
-    console.log('delete');
-    socket.emit('delete');
-  });
+    var splice_result = res.splice(';')
 
-  socket.on('delete_result', function(res){
-    changeOutputText("You have been deleted!","warning");
-    logout();
-  });
-
-  $('#pw').keydown(function(e) {
-    if (e.keyCode == 13) {
-        login();
+    if(splice_result[0]){
+      if(splice_result[0] == 'login'){
+        if(splice_result[1] == 'ok'){
+          console.log('Login erfolgreich');
+          loggedIn = true;
+          $('#login').hide();
+          $('#register').hide();
+          $('#form_user').hide();
+          $('#form_pw').hide();
+          $('#logout').show();
+          changeOutputText("Login successfull!","success");
+          getRunningAuctions();
+        }else{
+          console.log('Login NICHT erfolgreich!')
+        }
+      }else if(splice_result[0] == 'logout'){
+        if(splice_result[1] == 'ok'){
+          console.log('Logout erfolgreich');
+          changeOutputText("You have been logged out!","warning");
+          hideForLogOut();
+        }else{
+          console.log('Logout NICHT erfolgreich!');
+          changeOutputText("Login  failed!","danger");
+        }
+      }else if(splice_result[0] == 'auctions'){
+        printAuctions(JSON.parse(splice_result[1]));
+        console.log('auctions are commings!' + splice_result[1])
+      }else if(splice_result[0] == 'report'){
+        console.log('reports are comming!' + splice_result[1])
+      }
     }
+
   });
 
-  $('#login').click(function(){
-    socket.emit('login', $('#user').val(),$('#pw').val());
-  });
-  socket.on('login_result', function(res){
 
+socket.on('login_result', function(res){
 
-          console.log('login_result');
-
-    if(res == 1)
-    {
-
-      loggedIn = true;
-      $('#login').hide();
-      $('#register').hide();
-      $('#form_user').hide();
-      $('#form_pw').hide();
-      $('#logout').show();
-      $('#delete').show();
-
-      changeOutputText("Login successfull!","success");
-
-      socket.emit('list_auctions');
-    }
-   	else
-   		changeOutputText("Login  failed!","danger");
-  });
 
   socket.on('list_auctions_result', function(res){
         
@@ -188,21 +194,34 @@ function activateButtons(){
   $('.check').off();
   $('.check').click(function() {
     var auctionId = $(this).data('id');
-    socket.emit('check_bid', auctionId);
+    socket.emit('request','check_bid;id=' + auctionId)
   });
 } 
 
+function printAuctions(auctions){
+  for(var i; i < auctions.length; i++){
+     addNewAuction(auction);
+  }
+}
+
 function login() {
-  socket.emit('login', $('#user').val(),$('#pw').val());
+  socket.emit('request','login;{user:' + $('#user').val() + ',pw:' + $('#pw').val()+'}');
 }
 
 function logout(){
+  socket.emit('request','logout;{user:' + $('#user').val()+'}');
+}
+
+function getRunningAuctions(){
+  socket.emit('request','getAuctions;');
+}
+
+function hideForLogOut(){
   $('#login').show();
   $('#register').show();
   $('#form_user').show();
   $('#form_pw').show();
   $('#logout').hide();
-  $('#delete').hide();
   $('#articleList').empty();
 }
 
@@ -210,7 +229,9 @@ function bid(that){
   console.log('bid!');
   var auctionId = $(that).data('id');
   var value = $('#value_' + auctionId).val();
-  socket.emit('new_bid', auctionId, value);
+
+  socket.emit('request','bid;product=' + auctionId + ';value=' + value);
+
   console.log("bid:" + auctionId + " " + value);
   $('.bid_value').val("");
 }
