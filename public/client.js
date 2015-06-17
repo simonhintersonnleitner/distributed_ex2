@@ -65,102 +65,100 @@ $(document).ready(function (){
         console.log('reports are comming!' + splice_result[1]);
       }
     }
-
   });
 
 
-socket.on('login_result', function(res){
+  socket.on('login_result', function(res){
 
+    socket.on('list_auctions_result', function(res){
 
-  socket.on('list_auctions_result', function(res){
+          $('#header').show();
 
-        $('#header').show();
+          if(res.length === 0){
+            $('#articleList').find('#output').remove();
+            $('#articleList').append('<tr id=output>');
+            $('#articleList').find('#output').append('<td>no runnig auction found!</td><td></td><td></td><td></td><td></td><td></td>');
+          }else{
+            res.forEach(function(auction){
+            addNewAuction(auction);
+            });
+          }
 
-        if(res.length === 0){
-          $('#articleList').find('#output').remove();
-          $('#articleList').append('<tr id=output>');
-          $('#articleList').find('#output').append('<td>no runnig auction found!</td><td></td><td></td><td></td><td></td><td></td>');
-        }else{
-          res.forEach(function(auction){
-          addNewAuction(auction);
-          });
-        }
+        socket.on('register_result', function(res){
+          console.log("register_result " + res);
 
-      socket.on('register_result', function(res){
-        console.log("register_result " + res);
+          if(res == 1){
+            loggedIn = true;
+            changeOutputText("Registration success",'success');
+          }
+          else
+            changeOutputText("Registration failed!",'danger');
+        });
 
-        if(res == 1){
-          loggedIn = true;
-          changeOutputText("Registration success",'success');
-        }
-        else
-          changeOutputText("Registration failed!",'danger');
-      });
+        socket.on('auction_ended', function(auctionId){
+          if(loggedIn){
+            console.log("auction_ended id:" + auctionId);
+            $('#time_' + auctionId).remove();
+            $('#bidform_' + auctionId).remove();
+            $('#check_' + auctionId).remove();
+            $('#row_' + auctionId).find('td').eq(3).empty();
+            $('#row_' + auctionId).find('td').eq(3).append("Time is over!");
+          }
+        });
 
-      socket.on('auction_ended', function(auctionId){
-        if(loggedIn){
-          console.log("auction_ended id:" + auctionId);
-          $('#time_' + auctionId).remove();
-          $('#bidform_' + auctionId).remove();
-          $('#check_' + auctionId).remove();
-          $('#row_' + auctionId).find('td').eq(3).empty();
-          $('#row_' + auctionId).find('td').eq(3).append("Time is over!");
-        }
-      });
+        socket.on('win_result', function(res){
+          if(loggedIn)
+            $('#row_' + res).find('td').eq(4).append("You have won this auction!");
+        });
 
-      socket.on('win_result', function(res){
-        if(loggedIn)
-          $('#row_' + res).find('td').eq(4).append("You have won this auction!");
-      });
+        socket.on('new_auction', function(auction){
+          if(loggedIn)
+            addNewAuction(auction);
+        });
+    });
 
-      socket.on('new_auction', function(auction){
-        if(loggedIn)
-          addNewAuction(auction);
-      });
+    socket.on('new_bid_result', function(res){
+      $('#output').empty();
+      if(res == -1) {
+        changeOutputText("Concratulation you have the lowest single-bid!",'success');
+      }
+      else if(res == 1) {
+        changeOutputText("You have an single-bid but its to high",'warning');
+      }
+      else if(res == -2) {
+        changeOutputText("The auction ist timed out or the bid is invalid",'danger');
+      }
+      else {
+        changeOutputText(res + " other people have the same bid as you!",'warning');
+      }
+    });
+
+     socket.on('check_bid_result', function(res){
+      $('#output').empty();
+
+      if(res == -1) {
+        $('#output').append("Fehler es wurde keine Gebot abgegeben!");
+        console.log("Fehler es wurde keine Gebot abgegeben!");
+      }
+      else if(res == 1) {
+        $('#output').append("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
+        console.log("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
+      }
+      else if(res == -2) {
+        $('#output').append("<insert text here>");
+        console.log("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
+      }
+      else {
+        $('#output').append("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
+        console.log("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
+      }
+    });
+
+    $('#register').click(function(){
+    socket.emit('register', $('#user').val(),$('#pw').val());
+    });
+
   });
-
-  socket.on('new_bid_result', function(res){
-    $('#output').empty();
-    if(res == -1) {
-      changeOutputText("Concratulation you have the lowest single-bid!",'success');
-    }
-    else if(res == 1) {
-      changeOutputText("You have an single-bid but its to high",'warning');
-    }
-    else if(res == -2) {
-      changeOutputText("The auction ist timed out or the bid is invalid",'danger');
-    }
-    else {
-      changeOutputText(res + " other people have the same bid as you!",'warning');
-    }
-  });
-
-   socket.on('check_bid_result', function(res){
-    $('#output').empty();
-
-    if(res == -1) {
-      $('#output').append("Fehler es wurde keine Gebot abgegeben!");
-      console.log("Fehler es wurde keine Gebot abgegeben!");
-    }
-    else if(res == 1) {
-      $('#output').append("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
-      console.log("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
-    }
-    else if(res == -2) {
-      $('#output').append("<insert text here>");
-      console.log("Glückwunsch Sie haben aktuell das niedrigste Einzelgebot!");
-    }
-    else {
-      $('#output').append("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
-      console.log("Leider haben Sie aktuell NICHT das niedrigste Einzelgebot!");
-    }
-  });
-
-  $('#register').click(function(){
-  socket.emit('register', $('#user').val(),$('#pw').val());
-  });
-
-
 
 });
 
@@ -205,7 +203,11 @@ function printAuctions(auctions){
 }
 
 function login() {
-  socket.emit('request','login;{user:' + $('#user').val() + ',pw:' + $('#pw').val()+'}');
+  var user = {
+    user: $('#user').val(),
+    pw: $('#pw').val()
+  }
+ socket.emit("request","login;" + JSON.stringify(user));
 }
 
 function logout(){
@@ -264,4 +266,3 @@ function changeOutputText(msg,mode){
   $('#output').addClass('alert-' + mode);
 }
 
-});
