@@ -74,26 +74,26 @@ $(document).ready(function (){
           $('#row_' + res).find('td').eq(4).append("You have won this auction!");
       }else if(split_result[0] == 'new_auction'){
         addNewAuction(JSON.parse(split_result[2]));
-      }else if(split_result[0] == 'new_bid_result'){
+      }else if(split_result[0] == 'newBid'){
         $('#output').empty();
-        if(res == -1) {
+        if(split_result[2] == -1) {
           changeOutputText("Congratulation you have the lowest single-bid!",'success');
         }
-        else if(res == 1) {
+        else if(split_result[2] == 1) {
           changeOutputText("You have an single-bid but its to high",'warning');
         }
-        else if(res == -2) {
+        else if(split_result[2] == -2) {
           changeOutputText("The auction ist timed out or the bid is invalid",'danger');
         }
         else {
-          changeOutputText(res + " other people have the same bid as you!",'warning');
+          changeOutputText(split_result[2] + " other people have the same bid as you!",'warning');
         }
-      }else if(split_result[0] == 'check_bid_result'){
+      }else if(split_result[0] == 'checkBid'){
         $('#output').empty();
-        if(res == -1) {
+        if(split_result[2] == -1) {
           changeOutputText("You have not set an bid!",'danger');
         }
-        else if(res == 1) {
+        else if(split_result[2] == 1) {
           changeOutputText("Congratulation you have actually the lowest single-bid!",'success');
         }
         else {
@@ -137,7 +137,7 @@ function activateButtons(){
     var check = {
       auctionId: $(this).data('id')
     }
-    socket.emit('request','check_bid;'+username+';' + JSON.stringify(check));
+    socket.emit('request','checkBid;'+username+';' + JSON.stringify(check));
   });
 }
 
@@ -196,10 +196,10 @@ function bid(that){
   console.log('bid!');
 
   var newBid = {
-    product: $(that).data('id'),
+    auctionId: $(that).data('id'),
     value: $('#value_' + auctionId).val()
   }
-  socket.emit('request','bid;'+username+';'+ JSON.stringify(newBid));
+  socket.emit('request','newbid;'+username+';'+ JSON.stringify(newBid));
 
   console.log("bid:" + auctionId + " " + value);
   $('.bid_value').val("");
