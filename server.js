@@ -1,14 +1,58 @@
-var app = require('express')();
-var express = require('express');
-var http = require('http').Server(app);
 var _ = require('underscore');
 var amqp = require('amqplib');
 var when = require('when');
-app.use(express.static(__dirname + '/public'));
 
-app.get('/', function(req, res){
-  res.sendFile(__dirname + '/client.html');
-});
+//Login
+//   socket.on('login', function(username,pw){
+//    if(authenticate(username, pw)) {
+//       socket.username = username;
+//       var user = UserModel.prototype.findUser(username);
+//       user.socket = socket.id;
+//       io.emit('login_result', 1);
+//     }
+//     else
+//       io.emit('login_result', 0);
+//   });
+
+amqp.connect('amqp://localhost').then(function(conn) {
+  process.once('SIGINT', function() { conn.close(); });
+  return conn.createChannel().then(function(ch) {
+
+    var ok = ch.assertQueue('request', {durable: false});
+
+    ok = ok.then(function(_qok) {
+      return ch.consume('request', function(msg) {
+        console.log(" [x] Server received '%s'", msg.content.toString());
+        var res = msg.content.splice(';');
+        res[1] = JSON.parse(res[1]);
+
+        if(res[0].toString() === 'login'){
+          console.log('SWAG');
+          console.log(res[1]);
+        }
+      }, {noAck: true});
+    });
+
+    return ok.then(function(_consumeOk) {
+      console.log(' Server waiting for messages. ');
+    });
+  });
+
+  function send(msg, res){
+    console.log('Yolo');
+    return when(conn.createChannel().then(function(ch) {
+        var q = 'response';
+        var ok = ch.assertQueue(q, {durable: false});
+
+        return ok.then(function(_qok) {
+          ch.sendToQueue(q, new Buffer('msg'));
+          console.log(" [x] Server sent '%s'", msg);
+          return ch.close();
+        });
+      })).ensure(function() { });;
+      //conn.close();
+  };
+
 var userList = [];
 var articleList = [];
 var auctionList = [];
@@ -24,7 +68,7 @@ var UserModel = function(user, pw) {
   };
 
   this.delete = function() {
-    io.sockets.connected[this.socket].emit('delete_result');
+    // io.sockets.connected[this.socket].emit('delete_result');
     userList = _.without(userList, _.findWhere(userList, {_userName: this._userName}));
   };
 
@@ -76,7 +120,7 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
 
   this.endAuction = function(){
     this._ended = true;
-    io.emit('auction_ended', this._id);
+    // io.emit('auction_ended', this._id);
     this.notifyWinner();
   };
 
@@ -85,16 +129,16 @@ var AuctionModel = function(articleId, beganAt, endsAt) {
       //is there a winningBid with a user?
     if(winningBid._user) {
       //if the user connected?
-      if(io.sockets.connected[winningBid._user.socket]){
-        io.sockets.connected[winningBid._user.socket].emit('win_result', this._id);
-      }
-      else{
-        //User not connected
-      }
+      // if(io.sockets.connected[winningBid._user.socket]){
+      //   io.sockets.connected[winningBid._user.socket].emit('win_result', this._id);
+      // }
+      // else{
+      //   //User not connected
+      // }
     }
     else { //Restart auction
       var auction = new AuctionModel(this._article._id, Date.now(), Date.now() + 1000 * 60 * 1);
-      io.emit('new_auction', auction);
+      // io.emit('new_auction', auction);
     }
   };
   auctionList.push(this);
@@ -190,13 +234,6 @@ function authenticate(username, pw) {
   return true;
 }
 
-//socket functions
-io.on('connection', function(socket){
-
-  socket.on('request', msg){
-
-  }
-});
 
 
 // io.on('connection', function(socket){
@@ -212,17 +249,7 @@ io.on('connection', function(socket){
 
 //   });
 
-//   //Login
-//   socket.on('login', function(username,pw){
-//   	if(authenticate(username, pw)) {
-//       socket.username = username;
-//       var user = UserModel.prototype.findUser(username);
-//       user.socket = socket.id;
-//       io.emit('login_result', 1);
-//     }
-//     else
-//       io.emit('login_result', 0);
-//   });
+//   /
 
 //   //Logout
 //   socket.on('logout', function(){
@@ -275,6 +302,5 @@ setInterval(function() {
   AuctionModel.prototype.checkForEndedAuctions();
 }, 500);
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
-});
+
+}).then(null, console.warn);
