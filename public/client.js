@@ -103,11 +103,8 @@ $(document).ready(function (){
         else if(res == 1) {
           changeOutputText("Congratulation you have actually the lowest single-bid!",'success');
         }
-        else if(res == -2) {
-          changeOutputText("<insert text here>");
-        }
         else {
-          changeOutputText("Sorry at that moment you dont have the lowest single-bid!",'warning');
+          changeOutputText("Sorry you dont have the lowest single-bid at this moment!",'warning');
         }
       }
     }
